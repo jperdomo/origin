@@ -22,5 +22,7 @@ fi
 
 # Run selected script
 selected_script="${scripts[$((selection-1))]}"
-echo "Running $selected_script..."
+echo "Running $selected_script...
+
+"
 ./"$selected_script".sh

@@ -5,8 +5,7 @@ scripts=("rocky" "fedora" "ubuntu" "alpine" "mac" "win")
 
 # Print the menu
 echo "
-Select ORIGIN script to run:
-"
+Select ORIGIN script to run:"
 for i in "${!scripts[@]}"; do
   printf "%s) %s\n" "$((i+1))" "${scripts[$i]}"
 done

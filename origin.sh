@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the list of available scripts
-scripts=("rocky" "fedora" "alpine" "mac" "win")
+scripts=("rocky" "fedora" "ubuntu" "alpine" "mac" "win")
 
 # Print the menu
 echo "

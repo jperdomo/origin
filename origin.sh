@@ -1,29 +1,28 @@
 #!/bin/bash
 
-# Define the list of available scripts
-scripts=("rocky" "fedora" "ubuntu" "alpine" "mac" "win")
+# Select
+source="scripts"
+cd $source
+files=(*.sh)
+select file in "${files[@]}"; do
+if [[ -n "$file" ]]; then
 
-# Print the menu
-echo "
-Select ORIGIN script to run:"
-for i in "${!scripts[@]}"; do
-  printf "%s) %s\n" "$((i+1))" "${scripts[$i]}"
-done
+# Output
+  origin=$(echo "$file" | sed 's/\.sh$//')
+  echo "
+  $origin | origin script running...
+  
+  " && sleep 1
 
-# Get user input
-read -r selection
-
-# Validate user input
-if ! [[ "$selection" =~ ^[1-9][0-9]*$ ]] || (( selection < 1 )) || (( selection > ${#scripts[@]} )); then
-  echo "Invalid selection."
+  # Script
+  #echo ./$source/$origin.sh
+  echo "$(pwd)/$file"
+  break
+    
+# Invalid selection
+else
+  echo "Invalid selection. Try again."
   exit 1
 fi
 
-# Run selected script
-selected_script="${scripts[$((selection-1))]}"
-echo "
-
-Running $selected_script...
-
-"
-./"$selected_script".sh
+done

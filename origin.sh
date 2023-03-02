@@ -16,7 +16,7 @@ if [[ -n "$file" ]]; then
 
   # Script
   #echo ./$source/$origin.sh
-  echo "$(pwd)/$file"
+  bash -c "$(pwd)/$file"
   break
     
 # Invalid selection

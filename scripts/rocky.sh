@@ -1,2 +1,2 @@
 #!/bin/bash
-curl -s https://raw.githubusercontent.com/jperdomo/start/main/rhel/basics-rocky.sh | bash
+curl -s https://raw.githubusercontent.com/jperdomo/start/main/rocky/basics-rocky.sh | bash

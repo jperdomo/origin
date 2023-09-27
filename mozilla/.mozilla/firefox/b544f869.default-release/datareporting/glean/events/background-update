@@ -1,0 +1,2 @@
+{"timestamp":3148455,"category":"nimbus_events","name":"enrollment","extra":{"experiment":"pbnewtab-vpn-cross-promo","branch":"treatment-a","experiment_type":"nimbus","enrollment_id":"bba8dce7-a71d-42b4-93ff-c0ccead3a1d8"}}
+{"timestamp":3148466,"category":"nimbus_events","name":"enrollment","extra":{"branch":"sync-after-tab","experiment_type":"nimbus","experiment":"task-continuity-sync-after-tab-change-rollout-40","enrollment_id":"b42c5ed0-6b6a-4218-83be-4e138a9e253e"}}

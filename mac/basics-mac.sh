@@ -11,7 +11,9 @@ neofetch \
 curl \
 speedtest-cli \
 rclone \
-pandoc
+pandoc \
+tailscale \
+node
 echo "| CLI Basics Complete |"
 
 # Casks

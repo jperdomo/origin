@@ -4,6 +4,7 @@
 brew install \
 git \
 gh \
+watch \
 htop \
 bmon \
 btop \

@@ -13,8 +13,8 @@ curl \
 speedtest-cli \
 rclone \
 pandoc \
-tailscale \
 node
+
 echo "| CLI Basics Complete |"
 
 # Casks
@@ -26,7 +26,9 @@ google-chrome \
 brave-browser \
 cyberduck \
 remote-desktop-manager-free \
-visual-studio-code 
+visual-studio-code \
+vmware-fusion
+
 
 echo "| Cask Basics Complete |"
 

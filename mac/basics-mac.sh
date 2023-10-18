@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install homebrew first
+# Homebrew CLI
 brew install \
 git \
 gh \
@@ -17,7 +17,7 @@ node
 
 echo "| CLI Basics Complete |"
 
-# Casks
+# Homebrew Casks
 brew install --cask \
 iterm2 \
 arc \

@@ -28,7 +28,10 @@ cyberduck \
 remote-desktop-manager-free \
 visual-studio-code \
 vmware-fusion
+<<<<<<< HEAD
 
+=======
+>>>>>>> fd059f4 (lxc tailscale tunnel conf)
 
 echo "| Cask Basics Complete |"
 

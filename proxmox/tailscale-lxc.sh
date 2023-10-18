@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source="lxc/"
+source="/etc/pve/lxc/"
 
 # Define the values to add
 line1="lxc.cgroup2.devices.allow: c 10:200 rwm"

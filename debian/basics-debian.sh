@@ -22,4 +22,5 @@ stress \
 neofetch \
 iputils-ping \
 net-tools \
+iperf \
 nfs-common

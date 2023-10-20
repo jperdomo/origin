@@ -1,12 +1,26 @@
 #!/bin/bash
-# Install
-sudo apt-get install -y \
+
+# Check that we're root; if not, fail out
+if [[ $(whoami) != "root" ]]; then
+    echo "This script must be run as 'root' or with 'sudo' to function."
+    exit 1
+fi
+
+# Update + Install
+apt update -y
+
+apt install -y \
+sudo \
+lf \
 git \
-htop \
-btop \
-bmon \
+gh \
+nano \
 curl \
+htop \
+bmon \
+btop \
 stress \
 neofetch \
-flatpak \
-speedtest-cli
+iputils-ping \
+net-tools \
+nfs-common

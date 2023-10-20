@@ -20,6 +20,7 @@ bmon \
 btop \
 stress \
 neofetch \
+iperf \
 iputils-ping \
 net-tools \
 nfs-common

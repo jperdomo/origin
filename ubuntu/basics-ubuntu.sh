@@ -11,7 +11,6 @@ apt update -y
 
 apt install -y \
 sudo \
-lf \
 git \
 gh \
 nano \

@@ -9,7 +9,7 @@ fi
 # UUIDs of the extensions
 runcat="run-cat@spoonless.github.io"
 dash_to_panel="dash-to-panel@jderose9.github.com"
-user_at_host="user_at_host@cmm.github.com"
+user_at_host="user-at-host@cmm.github.com"
 
 # RunCat
 gnome-extensions install "$runcat"

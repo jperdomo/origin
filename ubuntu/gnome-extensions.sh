@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Broken
+
 # Check if gnome-extensions command is available
 if ! [ -x "$(command -v gnome-extensions)" ]; then
   echo "Error: gnome-extensions command not found. Make sure you have the GNOME Shell Extensions package installed."

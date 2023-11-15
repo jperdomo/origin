@@ -2,7 +2,6 @@
 
 # Dark Theme
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark
-
 ## BKG
 color="#333333"
 ### Set the background color using gsettings
@@ -16,17 +15,16 @@ gsettings set org.gnome.desktop.background picture-uri ''
 sudo apt update
 sudo apt install -y gnome-console
 
-# Hide
-gsettings set org.gnome.shell.extensions.ding show-home false
-
 # Apps
 sudo apt install -y gnome-tweaks gnome-shell-extension-manager
+
+# Hide
+gsettings set org.gnome.shell.extensions.ding show-home false
 
 # Favorites
 gsettings set org.gnome.shell favorite-apps "['org.gnome.Console.desktop', 'org.gnome.Nautilus.desktop', 'firefox_firefox.desktop']"
 
-### Broken ###
-
+##### Broken #####
 # Install gnome-extensions-app if not already installed
 if ! command -v gnome-extensions-app &> /dev/null; then
     sudo apt update

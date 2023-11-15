@@ -4,7 +4,7 @@
 sudo apt-get update -y
 
 # Install Cockpit
-sudo apt-get install cockpit podman cockpit-podman cockpit-pcp -y
+sudo apt-get install cockpit podman cockpit-podman pcp cockpit-pcp -y
 
 # Enable and start the Cockpit service
 sudo systemctl enable --now cockpit.socket

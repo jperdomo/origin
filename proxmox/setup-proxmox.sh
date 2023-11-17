@@ -4,6 +4,8 @@
 echo "deb http://download.proxmox.com/debian bookworm pve-no-subscription" >> /etc/apt/sources.list
 echo "#deb https://enterprise.proxmox.com/debian/pve bookworm pve-enterprise" > /etc/apt/sources.list.d/pve-enterprise.list
 
+# Missing remove ceph enterprise
+
 # Update & Upgrade
 apt update -y && apt upgrade -y
 

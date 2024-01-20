@@ -4,7 +4,7 @@
 sudo apt update
 
 # Install Cockpit
-sudo apt install -y cockpit podman cockpit-podman pcp cockpit-pcp
+sudo apt install -y cockpit pcp cockpit-pcp
 
 # 45 Drives Repo + Cockpit Navigator
 curl -sSL https://repo.45drives.com/setup -o setup-repo.sh

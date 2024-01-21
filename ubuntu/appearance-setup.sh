@@ -2,6 +2,7 @@
 
 # Dark Theme
 gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+
 ## BKG
 color="#333333"
 ### Set the background color using gsettings

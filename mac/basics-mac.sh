@@ -9,21 +9,12 @@ htop \
 bmon \
 btop \
 neofetch \
-curl \
-rclone \
-pandoc \
-node
-echo "| CLI Basics Complete |"
-
-# Homebrew Casks
-brew install --cask \
-firefox \
-google-chrome \
+curl
 brave-browser \
 cyberduck \
 remote-desktop-manager-free \
 visual-studio-code \
-vmware-fusion
+utm
 echo "| Cask Basics Complete |"
 
 #iterm2 \
@@ -33,6 +24,9 @@ echo "| Cask Basics Complete |"
 #carbon-copy-cloner \
 #utm \
 #obsidian
+#vmware-fusion
+#firefox \
+#google-chrome \
 
 # MAS
 #mas - https://github.com/mas-cli/mas

@@ -14,7 +14,8 @@ brave-browser \
 cyberduck \
 remote-desktop-manager-free \
 visual-studio-code \
-utm
+utm \
+iperf \
 echo "| Cask Basics Complete |"
 
 #iterm2 \
@@ -31,6 +32,9 @@ echo "| Cask Basics Complete |"
 # MAS
 #mas - https://github.com/mas-cli/mas
 brew install mas
+
+# EQmac
+brew install --cask eqmac
 
 # RunCat
 mas install 1429033973

@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Pipewire
-
 systemctl --user stop pipewire.socket
 systemctl --user stop pipewire.service
 systemctl --user disable pipewire.socket

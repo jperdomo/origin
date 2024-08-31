@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COLOR='$22222'
+COLOR='#22222'
 
 gsettings set org.gnome.desktop.background color-shading-type 'solid'
 gsettings set org.gnome.desktop.background picture-uri ''

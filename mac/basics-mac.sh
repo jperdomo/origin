@@ -9,7 +9,7 @@ htop \
 bmon \
 btop \
 neofetch \
-curl
+curl \
 brave-browser \
 cyberduck \
 remote-desktop-manager-free \

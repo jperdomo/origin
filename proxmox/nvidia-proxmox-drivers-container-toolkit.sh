@@ -4,7 +4,11 @@ apt update
 
 apt install pve-headers-$(uname -r)
 
-curl -fSsL https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/3bf863cc.pub | gpg --dearmor > /usr/share/keyrings/nvidia-drivers.gpg
+apt install gpg -y
+
+curl -fSsL https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/3bf863cc.pub | gpg --dearmor | tee /usr/share/keyrings/nvidia-drivers.gpg > /dev/null 2>&1
+
+#curl -fSsL https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/3bf863cc.pub | gpg --dearmor > /usr/share/keyrings/nvidia-drivers.gpg
 
 apt install dirmngr ca-certificates software-properties-common apt-transport-https dkms curl -y
 

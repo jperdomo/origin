@@ -1,0 +1,13 @@
+#cloud-config
+
+users:
+  - name: jperdomo
+    groups: sudo
+    shell: /bin/bash
+    home: /home/jperdomo
+    password: password123
+
+packages:
+  - git
+  - neofetch
+  - docker-ce

@@ -11,3 +11,15 @@ packages:
   - git
   - neofetch
   - docker-ce
+  - sudo
+  - gh
+  - nano
+  - curl
+  - htop
+  - bmon
+  - btop
+  - stress
+  - iperf
+  - iputils-ping
+  - net-tools
+  - nfs-common

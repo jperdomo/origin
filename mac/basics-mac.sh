@@ -9,7 +9,10 @@ htop \
 bmon \
 btop \
 neofetch \
-curl \
+curl
+echo "| CLI Complete |"
+
+# Basics
 brave-browser \
 cyberduck \
 remote-desktop-manager-free \
@@ -44,7 +47,7 @@ mas install 1475387142
 # Magnet
 mas install 441258766
 # Todoist
-mas install 585829637
+#mas install 585829637
 # NordVPN
 mas install 905953485
 # Blackmagic Disk Speed Test
@@ -56,7 +59,7 @@ mas install 404705039
 # DaisyDisk
 mas install 411643860
 # Infuse • Video Player
-mas install 1136220934
+#mas install 1136220934
 echo "| App Store Basics Complete |"
 
 # Apollo - Broken

@@ -17,8 +17,8 @@ mas install 985367838
 #Teams
 brew install --cask microsoft-teams
 #Azure VPN Client
-mas install  1553936137
+#mas install  1553936137
 #Adobe Acrobat Pro
-brew install --cask adobe-acrobat-pro
+#brew install --cask adobe-acrobat-pro
 
-echo "| Microsoft Office + Acrobat Install Complete |"
+echo "| Microsoft Office |"

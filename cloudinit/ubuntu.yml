@@ -5,7 +5,7 @@ users:
     groups: sudo
     shell: /bin/bash
     home: /home/jperdomo
-    password: password123
+    password: changeme
 
 packages:
   - git

@@ -27,6 +27,7 @@ if [ ! -d "$mount_point" ]; then
   # Create the mount point if it doesn't exist
   MNT=/mnt/$mount_point
   mkdir -p $MNT
+  chmod 775 $MNT
 fi
 
 echo "The mount folder of MNT is $MNT"

@@ -20,7 +20,7 @@ btop \
 bmon \
 curl \
 stress \
-neofetch \
+fastfetch \
 iputils \
 nfs-utils
 

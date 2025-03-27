@@ -17,8 +17,7 @@ zen-browser \
 cyberduck \
 utm \
 iperf \
-webstorm \
-brave-browser
+webstorm
 echo "
 | Homebrew Basics Complete |
 "
@@ -31,6 +30,10 @@ remote-desktop-manager
 echo "
 | Homebrew Casks Complete |
 "
+
+# Brave Browser
+brew install --cask brave-browser
+
 
 # MAS
 #mas - https://github.com/mas-cli/mas

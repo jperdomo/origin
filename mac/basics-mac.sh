@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Homebrew Update & Upgrade
+brew update && brew upgrade
+
 # Homebrew
 brew install \
 git \
@@ -23,6 +26,7 @@ echo "
 # Homebrew Casks
 brew install --cask \
 monitorcontrol \
+elgato-stream-deck \
 remote-desktop-manager
 echo "
 | Homebrew Casks Complete |

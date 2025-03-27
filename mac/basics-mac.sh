@@ -16,9 +16,9 @@ echo "| CLI Complete |"
 brave-browser \
 cyberduck \
 remote-desktop-manager-free \
-visual-studio-code \
 utm \
 iperf \
+webstorm
 echo "| Cask Basics Complete |"
 
 #iterm2 \
@@ -31,6 +31,7 @@ echo "| Cask Basics Complete |"
 #vmware-fusion
 #firefox \
 #google-chrome \
+#visual-studio-code \
 
 # MAS
 #mas - https://github.com/mas-cli/mas
@@ -58,8 +59,10 @@ mas install 1289583905
 mas install 404705039
 # DaisyDisk
 mas install 411643860
+
 # Infuse • Video Player
 #mas install 1136220934
+
 echo "| App Store Basics Complete |"
 
 # Apollo - Broken

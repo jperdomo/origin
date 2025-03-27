@@ -24,6 +24,9 @@ echo "
 brew install --cask \
 monitorcontrol \
 remote-desktop-manager
+echo "
+| Homebrew Casks Complete |
+"
 
 # MAS
 #mas - https://github.com/mas-cli/mas

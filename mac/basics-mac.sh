@@ -10,16 +10,20 @@ bmon \
 btop \
 neofetch \
 curl \
-brave-browser \
 zen-browser \
 cyberduck \
-remote-desktop-manager-free \
 utm \
 iperf \
-webstorm
+webstorm \
+brave-browser
 echo "
 | Homebrew Basics Complete |
 "
+
+# Homebrew Casks
+brew install --cask \
+monitorcontrol \
+remote-desktop-manager
 
 # MAS
 #mas - https://github.com/mas-cli/mas
@@ -41,6 +45,8 @@ mas install 1289583905
 mas install 404705039
 # DaisyDisk
 mas install 411643860
+# TickTick
+mas install 966085870
 
 echo "
 | App Store Basics Complete |
@@ -53,7 +59,6 @@ echo "
 #termius \
 #element \
 #carbon-copy-cloner \
-#utm \
 #obsidian
 #vmware-fusion
 #firefox \

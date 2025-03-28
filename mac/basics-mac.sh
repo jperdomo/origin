@@ -3,7 +3,7 @@
 # Homebrew Update & Upgrade
 brew update && brew upgrade
 
-# Homebrew
+# Homebrew CLI
 brew install \
 git \
 gh \
@@ -13,20 +13,22 @@ bmon \
 btop \
 fastfetch \
 curl \
-cyberduck \
-utm \
 iperf \
-webstorm
+nvtop
 
 echo "
-| Homebrew Basics Complete |
+| Homebrew CLI Complete |
 "
 
 # Homebrew Casks
 brew install --cask \
 monitorcontrol \
 elgato-stream-deck \
-remote-desktop-manager
+remote-desktop-manager \
+utm \
+cyberduck \
+webstorm
+
 
 echo "
 | Homebrew Casks Complete |
@@ -35,9 +37,10 @@ echo "
 # Brave Browser
 brew install --cask brave-browser
 
-
-# MAS
-#mas - https://github.com/mas-cli/mas
+echo "
+| Brave Browser Complete |
+"
+# MAS - https://github.com/mas-cli/mas
 brew install mas
 # RunCat
 mas install 1429033973

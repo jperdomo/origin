@@ -11,7 +11,7 @@ watch \
 htop \
 bmon \
 btop \
-neofetch \
+fastfetch \
 curl \
 cyberduck \
 utm \

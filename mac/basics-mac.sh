@@ -13,7 +13,6 @@ bmon \
 btop \
 neofetch \
 curl \
-zen-browser \
 cyberduck \
 utm \
 iperf \
@@ -74,6 +73,7 @@ echo "
 #firefox \
 #google-chrome \
 #visual-studio-code \
+#zen-browser \
 #brew install --cask eqmac
 
 # MAS Archive

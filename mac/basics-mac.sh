@@ -17,6 +17,7 @@ cyberduck \
 utm \
 iperf \
 webstorm
+
 echo "
 | Homebrew Basics Complete |
 "
@@ -26,6 +27,7 @@ brew install --cask \
 monitorcontrol \
 elgato-stream-deck \
 remote-desktop-manager
+
 echo "
 | Homebrew Casks Complete |
 "

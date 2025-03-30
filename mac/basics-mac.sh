@@ -62,6 +62,8 @@ mas install 404705039
 mas install 411643860
 # TickTick
 mas install 966085870
+# Watt - Displays Wattage
+mas install 1642732100
 
 echo "
 | App Store Basics Complete |

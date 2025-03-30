@@ -8,6 +8,7 @@ brew install \
 git \
 gh \
 watch \
+stress \
 htop \
 bmon \
 btop \

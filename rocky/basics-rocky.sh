@@ -13,6 +13,7 @@ dnf update -y
 
 #Install
 dnf install -y --allowerasing \
+sudo \
 git \
 nano \
 htop \

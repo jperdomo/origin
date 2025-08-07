@@ -1,4 +1,4 @@
-    #!/usr/bin/env bash
+  #!/usr/bin/env bash
     source /usr/lib/ujust/ujust.sh
     COCKPIT_SERVICE_STATUS="$(systemctl is-enabled cockpit.service)"
     if [ "$COCKPIT_SERVICE_STATUS" == "enabled" ]; then

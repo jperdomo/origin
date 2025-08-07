@@ -13,6 +13,7 @@ dnf update -y
 
 #Install
 dnf install -y --allowerasing \
+sudo \
 git \
 nano \
 htop \
@@ -23,10 +24,6 @@ stress \
 fastfetch \
 iputils \
 nfs-utils
-
-#Speedtest
-#curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.rpm.sh | bash
-#dnf install -y speedtest
 
 else
 echo "

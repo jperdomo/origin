@@ -1,5 +1,6 @@
 #!/bin/bash
 # Prep
+dnf update
 dnf install -y epel-release
 
 # Install

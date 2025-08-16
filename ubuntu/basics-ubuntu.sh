@@ -7,8 +7,8 @@ if [[ $(whoami) != "root" ]]; then
 fi
 
 # Update + Install
-apt update -y
-apt install -y \
+apt-get update -y
+apt-get install -y \
 sudo \
 git \
 gh \
@@ -20,11 +20,4 @@ btop \
 stress \
 iperf \
 iputils-ping \
-net-tools \
-nfs-common
-
-# Fastfetch
-apt install software-properties-common -y
-sudo add-apt-repository ppa:zhangsongcui3371/fastfetch -y
-apt update -y
-apt install -y fastfetch
+net-tools

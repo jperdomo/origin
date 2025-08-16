@@ -1,10 +1,14 @@
 #!/bin/bash
 # Prep
-sudo dnf install -y epel-release
+dnf update
+dnf install -y epel-release
 
 # Install
-sudo dnf install -y \
+dnf install -y \
 git \
+gh \
+clear \
+sudo \
 nano \
 htop \
 btop \
@@ -14,7 +18,3 @@ stress \
 fastfetch \
 iputils \
 nfs-utils
-
-# Speedtest
-#curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.rpm.sh | sudo bash
-#sudo dnf install -y speedtest

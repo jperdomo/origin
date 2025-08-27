@@ -15,6 +15,8 @@ dnf update -y
 dnf install -y --allowerasing \
 sudo \
 git \
+gh \
+clear \
 nano \
 htop \
 btop \

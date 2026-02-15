@@ -2,8 +2,9 @@
 
 # Ask for token
 echo "Provide your Ubuntu Live Patch Token:"
-read token
+read -rs token
+echo ""
 
 # Configure Live Patching
 sudo snap install canonical-livepatch
-sudo canonical-livepatch enable $token
+sudo canonical-livepatch enable "$token"

@@ -11,7 +11,7 @@ fi
 echo "Username to create + sudo"
 read -r user
 
-useradd -m -s /bin/bash -G sudo $user
+useradd -m -s /bin/bash -G sudo "$user"
 
 #usermod -aG sudo $user
 #newgrp sudo
@@ -20,6 +20,6 @@ echo "
 ========================================
 $user added the following:
 ========================================"
-groups $user
+groups "$user"
 echo "
 "

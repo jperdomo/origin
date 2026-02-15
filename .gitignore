@@ -1,11 +1,17 @@
 # macOS
 .DS_Store
 
+# Browser profiles
+.mozilla/
+
 # Environment
 .env
 
 # Executables
 *.exe
+
+# Review notes
+REVIEW.md
 
 # Excel temp files
 ~$*.xlsx

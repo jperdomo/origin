@@ -22,7 +22,7 @@ apt install nvidia-driver cuda nvidia-smi nvidia-settings nvtop -y
 
 apt install nvidia-container-toolkit -y
 
-nvidia-ctk runtime configure –runtime=docker
+nvidia-ctk runtime configure --runtime=docker
 
 echo "
 ##############################################

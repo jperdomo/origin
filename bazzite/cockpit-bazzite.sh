@@ -36,8 +36,8 @@
     fi
     if [[ "${OPTION,,}" =~ ^enable ]]; then
       echo "${green}${b}Enabling${n} pmlogger"
-      sudo mkdir /var/lib/pcp/tmp
-      sudo mkdir /var/log/pcp/pmlogger
+      sudo mkdir -p /var/lib/pcp/tmp
+      sudo mkdir -p /var/log/pcp/pmlogger
       sudo chown -R pcp:pcp /var/lib/pcp
       sudo chown pcp:pcp /var/log/pcp/pmlogger
       sudo systemctl enable --now pmlogger

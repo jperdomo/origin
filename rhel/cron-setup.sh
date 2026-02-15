@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 sudo dnf install -y cronie
 sudo systemctl start crond.service
 sudo systemctl enable crond.service

@@ -28,7 +28,6 @@ Most scripts are standalone and can be executed individually.
 | `mac/`       | macOS configuration                              |
 | `proxmox/`   | Proxmox VE host and container configuration      |
 | `rhel/`      | RHEL/Fedora setup scripts                        |
-| `rsync/`     | Rsync backup examples                            |
 | `synology/`  | Synology NAS fixes and utilities                 |
 | `tailscale/` | Tailscale VPN setup                              |
 | `ubuntu/`    | Ubuntu server and desktop setup                  |

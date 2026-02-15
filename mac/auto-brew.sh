@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 PLIST_PATH="$HOME/Library/LaunchAgents/com.user.brewupdate.plist"
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Ask for token
 echo "Provide your Ubuntu Live Patch Token:"

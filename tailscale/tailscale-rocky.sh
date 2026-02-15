@@ -1,13 +1,14 @@
 #!/bin/bash
+set -e
 
 # Root Check
-if [ "$UID" -eq 0 ]; then
-  echo "You have ROOT access. 
-  
+if [ "$EUID" -eq 0 ]; then
+  echo "You have ROOT access.
+
 Tailscale RHEL9 Install starting...
 
 "
-wait 3
+sleep 3
 
 #RHEL 9 Repo
 dnf config-manager --add-repo https://pkgs.tailscale.com/stable/rhel/9/tailscale.repo

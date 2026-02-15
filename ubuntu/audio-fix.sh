@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Pipewire
 systemctl --user stop pipewire.socket

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Orb Stack
 brew install orbstack

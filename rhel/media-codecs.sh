@@ -1,6 +1,7 @@
 #!/bin/bash
+set -e
 
-sudo dnf install \
+sudo dnf install -y \
 @multimedia \
 @sound-and-video \
 ffmpeg-libs \

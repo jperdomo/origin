@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 sudo bash -c '
 # Create a backup of the original dnf.conf file

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Ubuntu Automatic Security Updates Setup Script
 
 # Install unattended-upgrades if not already installed

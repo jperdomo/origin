@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 defaults write com.apple.screencapture location ~/Downloads
 defaults write com.apple.dock "autohide" -bool "true" && killall Dock

@@ -1,9 +1,10 @@
 #!/bin/bash
+set -e
 
 # Root Check
-if [ "$UID" -eq 0 ]; then
+if [ "$EUID" -eq 0 ]; then
   echo "You have ROOT access."
-   
+
 #Prep
 dnf config-manager --set-enabled crb
 dnf install -y epel-release --allowerasing

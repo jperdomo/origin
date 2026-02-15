@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Install OpenSSH server
 sudo dnf install -y openssh-server

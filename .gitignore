@@ -1,6 +1,13 @@
-win/runcat/runcat/RunCat.exe
+# macOS
 .DS_Store
-<<<<<<< HEAD
-.DS_Store
-=======
->>>>>>> e332d59 (fedora)
+
+# Environment
+.env
+
+# Executables
+*.exe
+
+# Excel temp files
+~$*.xlsx
+~$*.xls
+~$*.xlsm

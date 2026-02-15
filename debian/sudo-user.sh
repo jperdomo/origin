@@ -12,9 +12,9 @@ echo "Username that will be make sudo"
 
 read -r user
 
-adduser $user
-usermod -aG sudo $user
+adduser "$user"
+usermod -aG sudo "$user"
 newgrp sudo
 
 echo "$user added the following:"
-groups $user
+groups "$user"

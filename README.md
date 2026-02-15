@@ -24,10 +24,9 @@ Most scripts are standalone and can be executed individually.
 | `dockge/`    | Dockge container manager deployment              |
 | `flatpak/`   | Flatpak and Flathub setup                        |
 | `gh/`        | GitHub CLI utilities                             |
+| `git/`       | Git configuration scripts                        |
 | `mac/`       | macOS configuration                              |
-| `others/`    | Miscellaneous helper scripts and examples        |
 | `proxmox/`   | Proxmox VE host and container configuration      |
-| `rclone/`    | Rclone mount and cloud storage scripts           |
 | `rhel/`      | RHEL/Fedora setup scripts                        |
 | `rsync/`     | Rsync backup examples                            |
 | `synology/`  | Synology NAS fixes and utilities                 |

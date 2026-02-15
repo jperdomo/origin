@@ -1,5 +1,5 @@
 #!/bin/bash
-echo What is the new hostname?
-read hostname
-hostnamectl set-hostname $hostname
-echo hostname set to: $(hostname)
+echo "What is the new hostname?"
+read -r hostname
+hostnamectl set-hostname "$hostname"
+echo "hostname set to: $(hostname)"

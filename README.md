@@ -39,3 +39,7 @@ Most scripts are standalone and can be executed individually.
 
 - Bash 4+ (or PowerShell for Windows scripts)
 - Root/sudo access for most scripts
+
+## License
+
+[MIT](LICENSE)

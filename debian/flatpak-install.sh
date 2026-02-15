@@ -1,6 +1,7 @@
 #!/bin/bash
+set -e
 
-# Flatak
+# Flatpak
 sudo apt install -y \
 flatpak \
 gnome-software-plugin-flatpak

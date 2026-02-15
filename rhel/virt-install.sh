@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 sudo dnf install -y @virtualization
 sudo systemctl start libvirtd
 sudo systemctl enable libvirtd

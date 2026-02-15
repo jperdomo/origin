@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Check for REAL security updates available
 sudo apt update

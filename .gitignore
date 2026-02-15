@@ -13,6 +13,19 @@
 # Review notes
 REVIEW.md
 
+# Archive directories
+\#archive/
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+
 # Excel temp files
 ~$*.xlsx
 ~$*.xls

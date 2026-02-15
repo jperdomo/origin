@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Detect OS
 source /etc/os-release

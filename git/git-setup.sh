@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 #Username
 echo git username?
 read -r username

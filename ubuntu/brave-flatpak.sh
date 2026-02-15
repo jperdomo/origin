@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Flatpak
 sudo apt update

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 sudo setsebool -P container_use_devices=true
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Docker Group + User
 sudo groupadd docker

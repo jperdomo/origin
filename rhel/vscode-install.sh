@@ -9,5 +9,5 @@ enabled=1
 gpgcheck=1
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 EOF
-dnf check-update -y
+sudo dnf check-update -y || true
 sudo dnf install -y code

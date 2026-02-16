@@ -19,3 +19,13 @@ systemctl start ssh
 systemctl status ssh
 
 ufw allow ssh
+
+# Harden SSH
+tee /etc/ssh/sshd_config.d/99-hardening.conf > /dev/null <<'EOF'
+PermitRootLogin no
+PasswordAuthentication no
+MaxAuthTries 3
+X11Forwarding no
+EOF
+
+systemctl restart ssh

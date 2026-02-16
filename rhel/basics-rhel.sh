@@ -33,4 +33,5 @@ echo "
 [ MUST RUN AS ROOT! ]
 
 "
+exit 1
 fi

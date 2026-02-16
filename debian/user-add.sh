@@ -11,6 +11,10 @@ fi
 
 echo "Username to create + sudo"
 read -r user
+if [ -z "$user" ] || [[ "$user" =~ ^- ]]; then
+    echo "Invalid username."
+    exit 1
+fi
 
 useradd -m -s /bin/bash -G sudo "$user"
 

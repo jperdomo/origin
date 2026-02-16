@@ -12,6 +12,10 @@ fi
 echo "Username that will be make sudo"
 
 read -r user
+if [ -z "$user" ] || [[ "$user" =~ ^- ]]; then
+    echo "Invalid username."
+    exit 1
+fi
 
 adduser "$user"
 usermod -aG sudo "$user"

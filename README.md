@@ -21,12 +21,10 @@ Most scripts are standalone and can be executed individually.
 | `alpine/`    | Alpine Linux setup scripts                       |
 | `bazzite/`   | Bazzite (Fedora Atomic) configuration            |
 | `debian/`    | Debian server and desktop utilities              |
-| `dockge/`    | Dockge container manager deployment              |
 | `flatpak/`   | Flatpak and Flathub setup                        |
 | `gh/`        | GitHub CLI utilities                             |
 | `git/`       | Git configuration scripts                        |
 | `mac/`       | macOS configuration                              |
-| `proxmox/`   | Proxmox VE host and container configuration      |
 | `rhel/`      | RHEL/Fedora setup scripts                        |
 | `synology/`  | Synology NAS fixes and utilities                 |
 | `tailscale/` | Tailscale VPN setup                              |

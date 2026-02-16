@@ -10,4 +10,4 @@ sudo dnf groupupdate multimedia --setop="install_weak_deps=False" --exclude=Pack
 sudo dnf groupupdate sound-and-video -y
 #VGA Controllers
 echo Current VGA controllers:
-echo $(lspci -vnn | grep VGA)
+echo "$(lspci -vnn | grep VGA)"

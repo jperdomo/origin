@@ -32,6 +32,7 @@ Most scripts are standalone and can be executed individually.
 | `tailscale/` | Tailscale VPN setup                              |
 | `ubuntu/`    | Ubuntu server and desktop setup                  |
 | `win/`       | Windows PowerShell setup scripts                 |
+| `zed/`       | Zed editor settings sync and auto-push           |
 
 ## Requirements
 

@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- Zed editor settings sync with symlink installer and launchd auto-push watcher
+- Zed editor settings sync with symlink installer
 - MIT LICENSE file
 - .gitignore entries for #archive/, editor files, .vscode/, .idea/, Thumbs.db
 - `set -e` to all scripts (exit on error)

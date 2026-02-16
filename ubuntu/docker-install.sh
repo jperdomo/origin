@@ -17,4 +17,4 @@ sudo apt install -y docker-ce docker-compose
 
 sudo systemctl status docker
 
-sudo usermod -aG docker ${USER}
+sudo usermod -aG docker "${USER}"

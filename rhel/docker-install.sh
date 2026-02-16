@@ -26,7 +26,7 @@ sudo systemctl start docker
 sudo systemctl enable docker
 
 # User Config
-sudo usermod -aG docker ${SUDO_USER:-$USER}
+sudo usermod -aG docker "${SUDO_USER:-$USER}"
 
 # Hello World
 sudo docker run hello-world

@@ -19,12 +19,14 @@ Most scripts are standalone and can be executed individually.
 | Directory    | Description                                      |
 |--------------|--------------------------------------------------|
 | `alpine/`    | Alpine Linux setup scripts                       |
+| `arch/`      | Arch Linux setup and Hyprland desktop             |
 | `bazzite/`   | Bazzite (Fedora Atomic) configuration            |
 | `debian/`    | Debian server and desktop utilities              |
 | `flatpak/`   | Flatpak and Flathub setup                        |
 | `gh/`        | GitHub CLI utilities                             |
 | `git/`       | Git configuration scripts                        |
 | `mac/`       | macOS configuration                              |
+| `nixos/`     | NixOS declarative system configuration (flake)   |
 | `rhel/`      | RHEL/Fedora setup scripts                        |
 | `synology/`  | Synology NAS fixes and utilities                 |
 | `tailscale/` | Tailscale VPN setup                              |

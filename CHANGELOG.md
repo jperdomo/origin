@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- NixOS declarative system configuration (flake) with Hyprland desktop
+- `.claude/` to .gitignore for Claude Code local settings
 - Zed editor settings sync with symlink installer
 - MIT LICENSE file
 - .gitignore entries for #archive/, editor files, .vscode/, .idea/, Thumbs.db

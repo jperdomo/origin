@@ -20,7 +20,7 @@ esac
 
 # Install Docker
 sudo dnf install -y dnf-plugins-core
-sudo dnf config-manager --add-repo "$DOCKER_REPO"
+sudo dnf config-manager addrepo --from-repofile="$DOCKER_REPO"
 sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo systemctl start docker
 sudo systemctl enable docker

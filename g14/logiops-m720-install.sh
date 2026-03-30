@@ -58,7 +58,28 @@ devices: (
 );
 EOF
 
+# Add systemd drop-in so logid starts after Bluetooth is ready
+sudo mkdir -p /etc/systemd/system/logid.service.d
+sudo tee /etc/systemd/system/logid.service.d/after-bluetooth.conf > /dev/null << 'EOF'
+[Unit]
+After=bluetooth.target
+EOF
+
+# Add systemd-sleep hook to restart logid on resume
+# (logid loses its hidraw connection after suspend — known issue)
+sudo tee /usr/lib/systemd/system-sleep/logid-restart.sh > /dev/null << 'SLEEPEOF'
+#!/bin/bash
+case $1 in
+  post)
+    sleep 2
+    systemctl restart logid
+    ;;
+esac
+SLEEPEOF
+sudo chmod +x /usr/lib/systemd/system-sleep/logid-restart.sh
+
 # Enable and (re)start the logid service
+sudo systemctl daemon-reload
 sudo systemctl enable logid
 sudo systemctl restart logid
 
@@ -66,6 +87,8 @@ echo ""
 echo "logiops configured for M720 Triathlon."
 echo "  Gesture button tap        → Activities Overview"
 echo "  Gesture button + drag L/R → Switch workspace"
+echo ""
+echo "  Sleep/resume hook installed — logid will restart automatically."
 echo ""
 echo "Logs: sudo journalctl -u logid -f"
 echo "Edit: /etc/logid.cfg  (restart: sudo systemctl restart logid)"

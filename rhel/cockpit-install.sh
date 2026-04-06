@@ -5,7 +5,7 @@ sudo dnf upgrade --refresh -y
 
 #Install
 sudo dnf install -y dnf-plugins-core
-sudo dnf install -y cockpit cockpit-selinux cockpit-pcp cockpit-navigator
+sudo dnf install -y cockpit cockpit-selinux
 
 #Enable Services
 sudo systemctl start cockpit cockpit.socket

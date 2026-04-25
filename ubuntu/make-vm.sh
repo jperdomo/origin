@@ -93,9 +93,34 @@ fi
 [[ $USERNAME =~ ^[a-z_][a-z0-9_-]{0,31}\$?$ ]] || { echo "USERNAME must be a valid POSIX user name (got: $USERNAME)" >&2; exit 2; }
 
 case $VARIANT in
-    server)  ISO=$IMG_DIR/ubuntu-26.04-live-server-amd64.iso;;
-    desktop) ISO=$IMG_DIR/ubuntu-26.04-desktop-amd64.iso;;
+    server)  ISO_NAME=ubuntu-26.04-live-server-amd64.iso;;
+    desktop) ISO_NAME=ubuntu-26.04-desktop-amd64.iso;;
 esac
+ISO=$IMG_DIR/$ISO_NAME
+
+if [[ ! -r $ISO ]]; then
+    DL=1
+    (( INTERACTIVE )) && ask_yn DL 1 "ISO not found at $ISO. Download from releases.ubuntu.com (~5 GB)?"
+    (( DL )) || { echo "ISO not readable: $ISO" >&2; exit 1; }
+    command -v curl >/dev/null || { echo "curl required to fetch ISO" >&2; exit 1; }
+    URL=https://releases.ubuntu.com/26.04/$ISO_NAME
+    echo "Downloading $ISO_NAME (sudo needed to write to $IMG_DIR)..."
+    sudo install -d -m 0711 "$IMG_DIR"
+    sudo curl -fL --retry 3 -o "$ISO" "$URL"
+    sudo chmod 0644 "$ISO"
+    if SUMS=$(curl -fsSL "https://releases.ubuntu.com/26.04/SHA256SUMS"); then
+        EXPECTED=$(printf '%s\n' "$SUMS" | grep -F "$ISO_NAME" | awk '{print $1; exit}')
+        if [[ -n $EXPECTED ]]; then
+            ACTUAL=$(sha256sum "$ISO" | awk '{print $1}')
+            [[ $ACTUAL == "$EXPECTED" ]] || { echo "checksum mismatch for $ISO" >&2; sudo rm -f "$ISO"; exit 1; }
+            echo "checksum verified"
+        else
+            echo "warning: $ISO_NAME not in SHA256SUMS — skipping verify" >&2
+        fi
+    else
+        echo "warning: could not fetch SHA256SUMS — skipping verify" >&2
+    fi
+fi
 
 [[ -r $ISO ]] || { echo "ISO not readable: $ISO" >&2; exit 1; }
 

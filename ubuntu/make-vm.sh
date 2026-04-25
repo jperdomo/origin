@@ -124,14 +124,16 @@ fi
 
 [[ -r $ISO ]] || { echo "ISO not readable: $ISO" >&2; exit 1; }
 
+declare -A PKG_FOR=([mkpasswd]=whois [cloud-localds]=cloud-image-utils [virt-install]=virtinst [genisoimage]=genisoimage)
 missing=()
 for t in mkpasswd cloud-localds virt-install genisoimage; do
     command -v "$t" >/dev/null || missing+=("$t")
 done
 if (( ${#missing[@]} )); then
-    echo "missing tools: ${missing[*]}" >&2
-    echo "install: sudo apt install -y whois cloud-image-utils virtinst genisoimage" >&2
-    exit 1
+    pkgs=()
+    for t in "${missing[@]}"; do pkgs+=("${PKG_FOR[$t]}"); done
+    echo "installing missing tools (${missing[*]}) via sudo apt: ${pkgs[*]}"
+    sudo apt-get install -y "${pkgs[@]}"
 fi
 
 if [[ -n ${MAKEVM_PASSWORD:-} ]]; then
@@ -213,11 +215,15 @@ fi
 } > "$WORK/user-data"
 unset PW
 
-SEED=$IMG_DIR/seed-$NAME.iso
+SEED_DIR=$IMG_DIR/seeds
+if [[ ! -w $SEED_DIR ]]; then
+    sudo install -d -o "$USER" -m 0755 "$SEED_DIR"
+fi
+SEED=$SEED_DIR/seed-$NAME.iso
 cloud-localds "$SEED" "$WORK/user-data" "$WORK/meta-data"
 
 if [[ $VARIANT == desktop ]]; then
-    GRAPHICS=(--graphics spice --video qxl)
+    GRAPHICS=(--graphics spice --graphics vnc,listen=127.0.0.1 --video qxl)
 else
     GRAPHICS=(--graphics vnc,listen=127.0.0.1 --video cirrus)
 fi
@@ -283,6 +289,6 @@ cat <<EOF
 RDP enabled: connect to <vm-ip>:3389 with username "$USERNAME" and the same password.
   ip:   virsh -c qemu:///system domifaddr $NAME
 Guest scrub on install: cloud-init/installer logs truncated, cached user-data deleted,
-journal vacuumed.$( (( KEEP_CDROM )) && printf '\nHost seed ISO still contains plaintext — delete it after first boot:\n  rm /var/lib/libvirt/images/seed-%s.iso' "$NAME" )
+journal vacuumed.$( (( KEEP_CDROM )) && printf '\nHost seed ISO still contains plaintext — delete it after first boot:\n  rm /var/lib/libvirt/images/seeds/seed-%s.iso' "$NAME" )
 EOF
 fi

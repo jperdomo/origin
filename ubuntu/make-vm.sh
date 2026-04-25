@@ -240,7 +240,7 @@ virt-install \
     --disk "size=$DISK_GB,format=qcow2" \
     --disk "path=$SEED,device=cdrom" \
     --location "$ISO,kernel=casper/vmlinuz,initrd=casper/initrd" \
-    --extra-args "autoinstall ds=nocloud" \
+    --extra-args "autoinstall ds=nocloud overlay.index=off overlay.redirect_dir=off overlay.metacopy=off" \
     --osinfo "detect=on,name=ubuntu24.04" \
     --network network=default \
     --noautoconsole \

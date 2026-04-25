@@ -5,11 +5,16 @@ set -e
 sudo apt update
 sudo apt install -y gnome-console
 
-# Hide Home Folder
-gsettings set org.gnome.shell.extensions.ding show-home false
+# Hide Home Folder (only if Desktop Icons NG extension is installed)
+if gsettings list-schemas 2>/dev/null | grep -q 'org.gnome.shell.extensions.ding'; then
+    gsettings set org.gnome.shell.extensions.ding show-home false
+fi
 
 # 12hr Clock
 gsettings set org.gnome.desktop.interface clock-format '12h'
+
+# Dark Mode (system-wide, GNOME 48+)
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 
 # Dark BKG
 COLOR='#222222'

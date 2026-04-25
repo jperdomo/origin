@@ -186,6 +186,7 @@ autoinstall:
   packages:
     - qemu-guest-agent
     - openssh-server
+    - git
 EOF
 (( RDP )) && echo "    - gnome-remote-desktop"
 (( KEEP_CDROM )) || echo "  shutdown: poweroff"
@@ -212,6 +213,9 @@ cat <<EOF
     - "curtin in-target --target=/target -- bash -c 'rm -f /var/log/installer/autoinstall-user-data /var/lib/cloud/instance/user-data.txt /var/lib/cloud/instance/user-data.txt.i; rm -rf /var/lib/cloud/seed /var/lib/cloud/seeds; for f in /var/log/installer/*.log /var/log/cloud-init.log /var/log/cloud-init-output.log; do [ -f \"\$f\" ] && : > \"\$f\"; done; journalctl --rotate; journalctl --vacuum-time=1s'"
 EOF
 fi
+cat <<EOF
+    - "curtin in-target --target=/target -- runuser -u $USERNAME -- git clone https://github.com/jperdomo/origin.git /home/$USERNAME/origin"
+EOF
 } > "$WORK/user-data"
 unset PW
 

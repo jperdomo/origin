@@ -21,4 +21,5 @@ btop \
 stress \
 iperf \
 iputils-ping \
-net-tools
+net-tools \
+fastfetch

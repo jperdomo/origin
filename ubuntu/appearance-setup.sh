@@ -123,12 +123,34 @@ ext_gsettings "$TS_UUID" org.gnome.shell.extensions.tilingshell outer-gaps 0
 # Runcat — animated load indicator in the top bar
 install_gnome_extension "runcat@kolesnikov.se"
 
-# Favorites: Ptyxis (terminal), Files, Firefox, plus Brave if installed.
-# Trash is rendered separately at end of dock.
-FAVORITES=("org.gnome.Ptyxis.desktop" "org.gnome.Nautilus.desktop" "firefox_firefox.desktop")
-if [ -f /usr/share/applications/brave-browser.desktop ]; then
-    FAVORITES+=("brave-browser.desktop")
+# Favorites: Ptyxis (terminal), Files, plus a browser. If both Firefox and
+# Brave are installed, only the system default browser is pinned — no point
+# in two browser icons sitting next to each other in the dock.
+FAVORITES=("org.gnome.Ptyxis.desktop" "org.gnome.Nautilus.desktop")
+
+firefox_installed=false
+if [ -f /var/lib/snapd/desktop/applications/firefox_firefox.desktop ] \
+   || [ -f /usr/share/applications/firefox.desktop ] \
+   || command -v firefox >/dev/null 2>&1; then
+    firefox_installed=true
 fi
+
+brave_installed=false
+if [ -f /usr/share/applications/brave-browser.desktop ]; then
+    brave_installed=true
+fi
+
+if $firefox_installed && $brave_installed; then
+    case "$(xdg-settings get default-web-browser 2>/dev/null)" in
+        brave-browser.desktop) FAVORITES+=("brave-browser.desktop") ;;
+        *) FAVORITES+=("firefox_firefox.desktop") ;;
+    esac
+elif $brave_installed; then
+    FAVORITES+=("brave-browser.desktop")
+elif $firefox_installed; then
+    FAVORITES+=("firefox_firefox.desktop")
+fi
+
 fav_list=$(printf "'%s', " "${FAVORITES[@]}")
 gsettings set org.gnome.shell favorite-apps "[${fav_list%, }]"
 

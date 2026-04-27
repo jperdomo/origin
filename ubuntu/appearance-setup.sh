@@ -123,10 +123,15 @@ ext_gsettings "$TS_UUID" org.gnome.shell.extensions.tilingshell outer-gaps 0
 # Runcat — animated load indicator in the top bar
 install_gnome_extension "runcat@kolesnikov.se"
 
-# Favorites: Ptyxis (terminal), Files, plus a browser. If both Firefox and
-# Brave are installed, only the system default browser is pinned — no point
-# in two browser icons sitting next to each other in the dock.
+# Favorites: Ptyxis (terminal), Files, VS Code if present (slot 3), plus a
+# browser. If both Firefox and Brave are installed, only the system default
+# browser is pinned — no point in two browser icons sitting next to each
+# other in the dock.
 FAVORITES=("org.gnome.Ptyxis.desktop" "org.gnome.Nautilus.desktop")
+
+if [ -f /usr/share/applications/code.desktop ]; then
+    FAVORITES+=("code.desktop")
+fi
 
 firefox_installed=false
 if [ -f /var/lib/snapd/desktop/applications/firefox_firefox.desktop ] \

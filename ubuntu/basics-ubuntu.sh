@@ -22,4 +22,7 @@ stress \
 iperf \
 iputils-ping \
 net-tools \
-fastfetch
+fastfetch \
+mosh \
+avahi-daemon \
+libnss-mdns

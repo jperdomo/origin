@@ -40,7 +40,14 @@ sudo tee /etc/brave/policies/managed/setup.json >/dev/null <<'JSON'
   "DefaultSearchProviderKeyword": ":d",
   "DefaultSearchProviderSearchURL": "https://duckduckgo.com/?q={searchTerms}",
   "DefaultSearchProviderSuggestURL": "https://duckduckgo.com/ac/?q={searchTerms}&type=list",
-  "DefaultSearchProviderIconURL": "https://duckduckgo.com/favicon.ico"
+  "DefaultSearchProviderIconURL": "https://duckduckgo.com/favicon.ico",
+  "ExtensionSettings": {
+    "nngceckbapebfimnlniiiahkandclblb": {
+      "installation_mode": "force_installed",
+      "update_url": "https://clients2.google.com/service/update2/crx",
+      "toolbar_pin": "force_pinned"
+    }
+  }
 }
 JSON
 

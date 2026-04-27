@@ -35,6 +35,8 @@ sudo tee /etc/brave/policies/managed/setup.json >/dev/null <<'JSON'
   "BraveRewardsDisabled": true,
   "BraveNewsDisabled": true,
   "BraveTalkDisabled": true,
+  "BraveP3AEnabled": false,
+  "BraveStatsPingEnabled": false,
   "DefaultSearchProviderEnabled": true,
   "DefaultSearchProviderName": "DuckDuckGo",
   "DefaultSearchProviderKeyword": ":d",
@@ -46,6 +48,10 @@ sudo tee /etc/brave/policies/managed/setup.json >/dev/null <<'JSON'
       "installation_mode": "force_installed",
       "update_url": "https://clients2.google.com/service/update2/crx",
       "toolbar_pin": "force_pinned"
+    },
+    "aghfnjkcakhmadgdomlmlhhaocbkloab": {
+      "installation_mode": "force_installed",
+      "update_url": "https://clients2.google.com/service/update2/crx"
     }
   }
 }
@@ -65,6 +71,9 @@ OVERRIDES='{
       "show_stats": false,
       "show_background_image": true,
       "show_branded_background_image": false
+    },
+    "wallet": {
+      "show_wallet_icon_on_toolbar": false
     }
   }
 }'

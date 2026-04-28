@@ -17,7 +17,7 @@ fi
 echo -n "Accept subnet routes from other nodes? (y/n): "
 read -r ACCEPT_ROUTES
 
-TS_ARGS="--authkey=${TS_AUTHKEY} --ssh --accept-dns"
+TS_ARGS="--authkey=${TS_AUTHKEY} --accept-dns"
 if [[ "$ACCEPT_ROUTES" =~ ^[Yy]$ ]]; then
     TS_ARGS="$TS_ARGS --accept-routes"
 fi

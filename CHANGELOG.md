@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `wg-rsync/` directory: generic file-transfer harness over containerized WireGuard with SSH bootstrap, multi-path batching, and `.env` configuration
 - NixOS declarative system configuration (flake) with Hyprland desktop
 - `.claude/` to .gitignore for Claude Code local settings
 - Zed editor settings sync with symlink installer

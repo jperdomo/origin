@@ -31,6 +31,7 @@ Most scripts are standalone and can be executed individually.
 | `synology/`  | Synology NAS fixes and utilities                 |
 | `tailscale/` | Tailscale VPN setup                              |
 | `ubuntu/`    | Ubuntu server and desktop setup                  |
+| `wg-rsync/`  | File transfer over containerized WireGuard tunnel|
 | `win/`       | Windows PowerShell setup scripts                 |
 | `zed/`       | Zed editor settings sync                         |
 

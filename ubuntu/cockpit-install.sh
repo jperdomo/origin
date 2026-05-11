@@ -15,7 +15,7 @@ sudo apt install -y \
     pcp-zeroconf \
     cockpit-machines \
     libvirt-daemon-system libvirt-clients \
-    qemu-system-x86 virtinst bridge-utils \
+    qemu-system-x86 virtinst bridge-utils virtiofsd \
     cockpit-podman \
     podman
 

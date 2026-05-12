@@ -31,12 +31,18 @@ EOF
 sudo systemctl restart systemd-logind
 
 # 3. Caffeine extension (idle/screensaver inhibition toggle in top bar)
-read -r -p "Install Caffeine GNOME extension for idle inhibition toggle? [Y/n]: " want_caffeine
-if [[ ! "$want_caffeine" =~ ^[Nn]$ ]]; then
+# Skip if already present (e.g. installed via the Extensions app / extensions.gnome.org).
+# Ubuntu 26.04 dropped the apt package — install manually from the Extensions app if missing.
+if gnome-extensions info caffeine@patapon.info >/dev/null 2>&1; then
+    gnome-extensions enable caffeine@patapon.info || true
+    echo "Caffeine already installed — ensured enabled."
+elif apt-cache show gnome-shell-extension-caffeine >/dev/null 2>&1; then
     sudo apt update
     sudo apt install -y gnome-shell-extension-caffeine
     gnome-extensions enable caffeine@patapon.info || true
-    echo "Caffeine installed. Log out + back in if the cup icon doesn't appear in the top bar."
+else
+    echo "Caffeine not installed and no apt package on this release."
+    echo "Install via the Extensions app or https://extensions.gnome.org/extension/517/caffeine/"
 fi
 
 echo "Done. Test: plug in AC, close lid, SSH in from another machine — session should stay up."

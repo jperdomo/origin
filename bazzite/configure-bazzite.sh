@@ -354,32 +354,37 @@ pick_kb_color() {
 # NEW per-device /xyz/ljones/aura/<id>, so it unwraps UnknownObject and aborts -
 # a core-dump on every boot (the "strange boot"). It only provides user-authored
 # custom/animated effects; static RGB via `asusctl aura` runs through the root
-# asusd and is unaffected. No fixed release exists yet, so stop it auto-starting.
+# asusd and is unaffected. No fixed release exists yet, so MASK it hard.
 #
-# NOTE: `mask` can't be used - the unit file is a real file in the highest-
-# precedence dir ~/.config/systemd/user, so systemd refuses to drop a /dev/null
-# symlink over it ("File already exists"). `disable` removes its
-# default.target.wants link, which is what actually starts it, so that's the fix.
-# --user unit, no sudo. Reversible: systemctl --user enable asusd-user.service
+# `disable` is NOT enough: another unit's Wants= (e.g. rog-lighting.service) can
+# still pull it in. Only masking blocks all starts. But `systemctl --user mask`
+# is refused here because the unit file is a real file in the highest-precedence
+# dir ~/.config/systemd/user ("File already exists"). Since that file is
+# user-owned, we mask it by hand: replace it with a /dev/null symlink (exactly
+# what mask does). Reversible: rm the symlink + restore, or reinstall asusctl.
 quiesce_asusd_user() {
-  local st; st="$(systemctl --user is-enabled asusd-user.service 2>/dev/null || true)"
-  if [[ "$st" == masked || "$st" == disabled ]]; then
-    ok "asusd-user already $st (won't auto-start / crash-loop)"
-    systemctl --user stop asusd-user.service 2>/dev/null || true
-    systemctl --user reset-failed asusd-user.service 2>/dev/null || true
-    return 0
+  local unit="asusd-user.service"
+  local uf="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/$unit"
+  local st; st="$(systemctl --user is-enabled "$unit" 2>/dev/null || true)"
+  [[ -z "$st" && ! -e "$uf" ]] && return 0          # not installed - nothing to do
+  if [[ "$st" == masked ]]; then ok "asusd-user already masked (no crash-loop)"; return 0; fi
+
+  info "Masking asusd-user.service (buggy per-user aura daemon crash-loops; static RGB via root asusd is unaffected)"
+  # Try the clean path first; if refused (real file present), symlink /dev/null.
+  systemctl --user mask "$unit" 2>/dev/null
+  if [[ -f "$uf" && ! -L "$uf" ]]; then
+    rm -f "$uf" && ln -s /dev/null "$uf"
   fi
-  if [[ -z "$st" ]]; then return 0; fi   # not installed - nothing to do
-  info "Disabling asusd-user.service (buggy per-user aura daemon crash-loops; static RGB via root asusd is unaffected)"
-  if systemctl --user mask asusd-user.service 2>/dev/null; then
-    ok "asusd-user masked (undo: systemctl --user unmask asusd-user.service)"
-  elif systemctl --user disable asusd-user.service 2>/dev/null; then
-    ok "asusd-user disabled (undo: systemctl --user enable asusd-user.service)"
+  systemctl --user daemon-reload 2>/dev/null || true
+  systemctl --user stop "$unit" 2>/dev/null || true
+  systemctl --user reset-failed "$unit" 2>/dev/null || true
+
+  st="$(systemctl --user is-enabled "$unit" 2>/dev/null || true)"
+  if [[ "$st" == masked ]]; then
+    ok "asusd-user masked (undo: rm '$uf' and reinstall asusctl, or systemctl --user unmask)"
   else
-    warn "could not disable asusd-user.service"
+    warn "asusd-user still reports '$st' - it may restart; check 'systemctl --user status $unit'"
   fi
-  systemctl --user stop asusd-user.service 2>/dev/null || true
-  systemctl --user reset-failed asusd-user.service 2>/dev/null || true
 }
 
 # Lighting: interactive -> colour sub-card then apply; non-interactive -> purple default.

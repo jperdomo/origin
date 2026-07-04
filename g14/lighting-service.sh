@@ -31,10 +31,12 @@ mkdir -p "$UNIT_DIR"
 cat > "$UNIT" <<EOF
 [Unit]
 Description=Apply ROG G14 lighting defaults (slash + keyboard)
-# asusd is a system service; by graphical login it's up. Order after the
-# user-facing asusd user daemon when present.
-After=asusd-user.service graphical-session.target
-Wants=asusd-user.service
+# asusd is a SYSTEM service (root daemon); by graphical login it's up, and
+# lighting.sh drives it through the asusctl CLI. Do NOT depend on asusd-user
+# (the per-user daemon): it crash-loops on this hardware (asusctl 6.3.x DBus
+# path bug) and is disabled/masked, so a Wants= here would only pull the broken
+# daemon back in and make it fail at every login.
+After=graphical-session.target
 
 [Service]
 Type=oneshot

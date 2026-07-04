@@ -302,7 +302,7 @@ setup_asus() {
   fi
 
   # Silence the crash-looping per-user aura daemon before applying lighting.
-  mask_asusd_user
+  quiesce_asusd_user
 
   # Apply the default lighting (slash solid/dimmed + keyboard purple)...
   info "Applying default lighting"
@@ -354,23 +354,37 @@ pick_kb_color() {
 # NEW per-device /xyz/ljones/aura/<id>, so it unwraps UnknownObject and aborts -
 # a core-dump on every boot (the "strange boot"). It only provides user-authored
 # custom/animated effects; static RGB via `asusctl aura` runs through the root
-# asusd and is unaffected. No fixed release exists yet, so mask it. As a --user
-# unit this needs no sudo. Reversible: systemctl --user unmask asusd-user.service
-mask_asusd_user() {
+# asusd and is unaffected. No fixed release exists yet, so stop it auto-starting.
+#
+# NOTE: `mask` can't be used - the unit file is a real file in the highest-
+# precedence dir ~/.config/systemd/user, so systemd refuses to drop a /dev/null
+# symlink over it ("File already exists"). `disable` removes its
+# default.target.wants link, which is what actually starts it, so that's the fix.
+# --user unit, no sudo. Reversible: systemctl --user enable asusd-user.service
+quiesce_asusd_user() {
   local st; st="$(systemctl --user is-enabled asusd-user.service 2>/dev/null || true)"
-  if [[ "$st" == masked ]]; then
-    ok "asusd-user already masked (no boot crash-loop)"; return 0
+  if [[ "$st" == masked || "$st" == disabled ]]; then
+    ok "asusd-user already $st (won't auto-start / crash-loop)"
+    systemctl --user stop asusd-user.service 2>/dev/null || true
+    systemctl --user reset-failed asusd-user.service 2>/dev/null || true
+    return 0
   fi
-  info "Masking asusd-user.service (buggy per-user aura daemon crash-loops; static RGB via root asusd is unaffected)"
-  systemctl --user mask asusd-user.service 2>/dev/null || true
+  if [[ -z "$st" ]]; then return 0; fi   # not installed - nothing to do
+  info "Disabling asusd-user.service (buggy per-user aura daemon crash-loops; static RGB via root asusd is unaffected)"
+  if systemctl --user mask asusd-user.service 2>/dev/null; then
+    ok "asusd-user masked (undo: systemctl --user unmask asusd-user.service)"
+  elif systemctl --user disable asusd-user.service 2>/dev/null; then
+    ok "asusd-user disabled (undo: systemctl --user enable asusd-user.service)"
+  else
+    warn "could not disable asusd-user.service"
+  fi
   systemctl --user stop asusd-user.service 2>/dev/null || true
   systemctl --user reset-failed asusd-user.service 2>/dev/null || true
-  ok "asusd-user masked (undo: systemctl --user unmask asusd-user.service)"
 }
 
 # Lighting: interactive -> colour sub-card then apply; non-interactive -> purple default.
 setup_lighting() {
-  mask_asusd_user   # stop the crash-looping user daemon; static RGB is unaffected
+  quiesce_asusd_user   # stop the crash-looping user daemon; static RGB is unaffected
   local interactive=1
   { [[ -t 0 && -t 1 ]] && [[ -z "${NO_TUI:-}" ]]; } || interactive=0
   if [[ $interactive == 1 ]]; then

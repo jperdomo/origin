@@ -301,6 +301,9 @@ setup_asus() {
     ok "tuned masked"
   fi
 
+  # Silence the crash-looping per-user aura daemon before applying lighting.
+  mask_asusd_user
+
   # Apply the default lighting (slash solid/dimmed + keyboard purple)...
   info "Applying default lighting"
   run_path g14/lighting.sh --defaults || warn "Lighting defaults skipped"
@@ -346,8 +349,28 @@ pick_kb_color() {
   return 0
 }
 
+# The asusd-user per-user daemon (asusctl 6.3.x) crash-loops on this hardware:
+# it calls the OLD singular DBus path /xyz/ljones/Aura, but asusd exposes the
+# NEW per-device /xyz/ljones/aura/<id>, so it unwraps UnknownObject and aborts -
+# a core-dump on every boot (the "strange boot"). It only provides user-authored
+# custom/animated effects; static RGB via `asusctl aura` runs through the root
+# asusd and is unaffected. No fixed release exists yet, so mask it. As a --user
+# unit this needs no sudo. Reversible: systemctl --user unmask asusd-user.service
+mask_asusd_user() {
+  local st; st="$(systemctl --user is-enabled asusd-user.service 2>/dev/null || true)"
+  if [[ "$st" == masked ]]; then
+    ok "asusd-user already masked (no boot crash-loop)"; return 0
+  fi
+  info "Masking asusd-user.service (buggy per-user aura daemon crash-loops; static RGB via root asusd is unaffected)"
+  systemctl --user mask asusd-user.service 2>/dev/null || true
+  systemctl --user stop asusd-user.service 2>/dev/null || true
+  systemctl --user reset-failed asusd-user.service 2>/dev/null || true
+  ok "asusd-user masked (undo: systemctl --user unmask asusd-user.service)"
+}
+
 # Lighting: interactive -> colour sub-card then apply; non-interactive -> purple default.
 setup_lighting() {
+  mask_asusd_user   # stop the crash-looping user daemon; static RGB is unaffected
   local interactive=1
   { [[ -t 0 && -t 1 ]] && [[ -z "${NO_TUI:-}" ]]; } || interactive=0
   if [[ $interactive == 1 ]]; then

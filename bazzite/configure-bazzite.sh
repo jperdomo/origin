@@ -51,35 +51,42 @@ run_path() {
 # ---------------------------------------------------------------------------
 ITEMS=(
   "Apps & Browsers|brave|Brave browser (Flatpak)|setup_brave"
-  "Apps & Browsers|ptyxis|Ptyxis terminal: default+dark+dock  [NEEDS REBOOT]|setup_ptyxis"
+  "Apps & Browsers|ptyxis|Ptyxis terminal: default+dark+icon+dock  [NEEDS REBOOT]|setup_ptyxis"
 
   "Power & Performance|perf|Set Performance power profile|setup_perf"
   "Power & Performance|dboost|Enable NVIDIA Dynamic Boost (fixes dGPU stuck at 180MHz)|setup_dgpu_boost"
+  "Power & Performance|lidserver|Run like a server: lid closed on AC stays awake|run_path bazzite/scripts/lid-server.sh"
 
   "G14 Hardware & Lighting|asus|Install asusctl + ROG Control Center|setup_asus"
   "G14 Hardware & Lighting|lighting|Slash solid/dimmed + keyboard colour|setup_lighting"
   "G14 Hardware & Lighting|m4key|Bind M4 key to open ROG Control Center|run_path g14/m4-bind.sh"
 
-  "Virtualization & Containers|virt|Virtualization (ujust setup-virtualization)|run_path bazzite/virt.sh"
+  "Networking & Remote Access|ssh|Enable SSH server (on boot)|setup_ssh"
+  "Networking & Remote Access|tailscale|Enable Tailscale VPN (then: sudo tailscale up)|setup_tailscale"
+
+  "Virtualization & Containers|virt|Virtualization (ujust setup-virtualization)|run_path bazzite/scripts/virt.sh"
   "Virtualization & Containers|cockpit|Cockpit web console (ujust cockpit)|ujust cockpit enable"
-  "Virtualization & Containers|ollama|Ollama on Podman (ROCm)|run_path bazzite/ollama-podman.sh"
+  "Virtualization & Containers|ollama|Ollama on Podman (ROCm)|run_path bazzite/scripts/ollama-podman.sh"
 
-  "Desktop Theme|theme|macOS (WhiteSur) look: dark theme, top bar, dock, single-bar|run_path bazzite/kde-macos-theme.sh"
-  "Desktop Theme|kde-dark|Stock KDE Breeze Dark (revert from macOS; panels kept)|run_path bazzite/kde-default-dark.sh"
+  "Desktop Theme|theme|macOS (WhiteSur) look: dark theme, top bar, dock, single-bar|run_path bazzite/scripts/kde-macos-theme.sh"
+  "Desktop Theme|kde-dark|Stock KDE Breeze Dark (revert from macOS; panels kept)|run_path bazzite/scripts/kde-default-dark.sh"
 
-  "System Fixes|nmtui|Fix layered NetworkManager-tui conflict|run_path bazzite/nmtui.sh"
+  "System Fixes|nmtui|Fix layered NetworkManager-tui conflict|run_path bazzite/scripts/nmtui.sh"
 )
 
 # One-line description per key, shown under each option in the menu (ASCII only
 # so the box padding stays aligned).
 declare -A DESC=(
   [brave]="Fast Chromium browser, installed as a Flatpak"
-  [ptyxis]="rpm-ostree layers Ptyxis (REBOOT needed), then re-run: default terminal + dark + first in dock"
+  [ptyxis]="rpm-ostree layers Ptyxis (REBOOT needed), then re-run: default terminal + dark + gray icon + first in dock"
   [perf]="Performance power profile (moot on G14: asusd owns it)"
   [dboost]="Enable nvidia-powerd (Dynamic Boost) so the laptop dGPU can raise clocks under load"
+  [lidserver]="Lid closed on AC keeps running (KDE + logind); on battery it still suspends"
   [asus]="asusctl + ROG Control Center; deploys the asusd daemon"
   [lighting]="Slash solid/dimmed + keyboard purple; persists at login"
   [m4key]="Bind M4 (XF86Launch1) to launch ROG Control Center"
+  [ssh]="Enable + start sshd (OpenSSH) so you can SSH in; via 'ujust ssh enable'"
+  [tailscale]="Enable the tailscaled daemon (ujust); then run 'sudo tailscale up' to join your tailnet"
   [virt]="Enable KVM/libvirt via 'ujust setup-virtualization'"
   [cockpit]="Cockpit web console on https://localhost:9090"
   [ollama]="Ollama LLM server on Podman (ROCm / AMD GPU)"
@@ -163,9 +170,29 @@ setup_ptyxis() {
     || dconf write /org/gnome/Ptyxis/interface-style "'dark'" 2>/dev/null \
     || warn "couldn't force Ptyxis dark via gsettings; it follows the system prefer-dark (which is set)"
 
+  info "Ptyxis -> standard gray terminal icon (replacing the green default)"
+  local apps_dir="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+  local sys_desktop="" d
+  for d in /usr/share/applications /var/lib/flatpak/exports/share/applications \
+           "${XDG_DATA_HOME:-$HOME/.local/share}/flatpak/exports/share/applications"; do
+    [[ -f "$d/org.gnome.Ptyxis.desktop" ]] && { sys_desktop="$d/org.gnome.Ptyxis.desktop"; break; }
+  done
+  if [[ -n "$sys_desktop" ]]; then
+    mkdir -p "$apps_dir"
+    # A user override with the same ID replaces the system entry wholesale, so
+    # copy it and rewrite every Icon= line (main entry + any Desktop Action
+    # groups) to the generic 'utilities-terminal', which the icon theme draws as
+    # a neutral gray terminal instead of Ptyxis's green branded icon.
+    sed -E 's/^Icon=.*/Icon=utilities-terminal/' "$sys_desktop" > "$apps_dir/org.gnome.Ptyxis.desktop"
+    update-desktop-database "$apps_dir" >/dev/null 2>&1 || true
+    ok "Ptyxis icon -> utilities-terminal (gray)"
+  else
+    warn "Ptyxis desktop file not found; icon left unchanged"
+  fi
+
   info "Ptyxis -> first in the dock (removing Konsole)"
   local f="${XDG_CONFIG_HOME:-$HOME/.config}/plasma-org.kde.plasma.desktop-appletsrc"
-  local py="$REPO_ROOT/bazzite/kde-dock-launchers.py"
+  local py="$REPO_ROOT/bazzite/scripts/kde-dock-launchers.py"
   if [[ -f "$f" && -f "$py" ]]; then
     cp "$f" "$f.bak" 2>/dev/null || true
     kquitapp6 plasmashell >/dev/null 2>&1 || true
@@ -175,7 +202,7 @@ setup_ptyxis() {
   else
     warn "dock config or helper missing; skipped dock change"
   fi
-  ok "Ptyxis: default terminal + dark + first in dock. Log out/in to settle."
+  ok "Ptyxis: default terminal + dark + gray icon + first in dock. Log out/in to settle."
 }
 
 setup_dgpu_boost() {
@@ -209,6 +236,45 @@ setup_perf() {
   else
     warn "power-profiles-daemon unavailable; falling back to tuned"
     sudo tuned-adm profile throughput-performance-bazzite
+  fi
+}
+
+setup_ssh() {
+  # Enable the OpenSSH server on boot. Bazzite ships a 'ujust ssh' recipe that
+  # enables+starts sshd (and prints your IP); fall back to systemctl directly.
+  local ip; ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  if systemctl is-enabled --quiet sshd 2>/dev/null; then
+    ok "SSH already enabled  (ssh ${USER}@${ip:-<ip>})"; return 0
+  fi
+  info "Enabling SSH server on boot"
+  if command -v ujust >/dev/null 2>&1; then
+    ujust ssh enable
+  else
+    sudo systemctl enable --now sshd
+  fi
+  ok "SSH enabled  ->  ssh ${USER}@${ip:-<ip>}"
+}
+
+setup_tailscale() {
+  # Enable the tailscaled daemon (via Bazzite's 'ujust tailscale' recipe). That
+  # only starts the service; you still authenticate once with 'sudo tailscale up'.
+  if systemctl is-enabled --quiet tailscaled 2>/dev/null; then
+    ok "Tailscale daemon already enabled"
+  else
+    info "Enabling Tailscale daemon"
+    if command -v ujust >/dev/null 2>&1; then
+      ujust tailscale enable
+    else
+      sudo systemctl enable --now tailscaled
+    fi
+    ok "tailscaled enabled"
+  fi
+  # Connected yet? 'tailscale status' exits nonzero (or says Logged out) when not up.
+  if tailscale status >/dev/null 2>&1; then
+    ok "Tailscale is up  ($(tailscale ip -4 2>/dev/null | head -1))"
+  else
+    warn "Tailscale daemon is running but not connected."
+    warn "  Run:  ${BOLD}sudo tailscale up${RESET}   to log in and join your tailnet."
   fi
 }
 
@@ -302,6 +368,9 @@ item_done() {
     lighting) systemctl --user is-enabled --quiet rog-lighting.service 2>/dev/null ;;
     theme)    [[ -d "${XDG_DATA_HOME:-$HOME/.local/share}/plasma/look-and-feel/com.github.vinceliuice.WhiteSur-dark" ]] ;;
     ollama)   podman container exists ollama 2>/dev/null ;;
+    lidserver) [[ -f /etc/systemd/logind.conf.d/99-g14-server-lid.conf ]] ;;
+    ssh)       systemctl is-enabled --quiet sshd 2>/dev/null ;;
+    tailscale) systemctl is-enabled --quiet tailscaled 2>/dev/null ;;
     *)        return 1 ;;   # unknown/unchecked -> treat as not-done
   esac
 }
@@ -525,7 +594,7 @@ main() {
       echo "[dry-run] would pin Brave to the dock"
     else
       info "Pinning Brave to the dock"
-      run_path bazzite/pin-to-dock.sh com.brave.Browser.desktop || warn "Could not pin Brave to dock"
+      run_path bazzite/scripts/pin-to-dock.sh com.brave.Browser.desktop || warn "Could not pin Brave to dock"
     fi
   fi
 

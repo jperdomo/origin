@@ -29,17 +29,42 @@ fi
 
 LOGIND_SNIPPET=/etc/systemd/logind.conf.d/99-g14-server-lid.conf
 
-# lidAction enum (PowerDevil SuspendSession modes): 0 = do nothing, 1 = sleep.
+# PowerDevil, Plasma 6. Two INDEPENDENT settings both suspend the machine, so
+# server-on-AC needs BOTH zeroed (verified against the powerdevil source):
+#   LidAction         - what closing the lid does
+#   AutoSuspendAction - the idle timer (default AC timeout 900s/15min -> Sleep)
+# Both live under group SuspendAndShutdown (NOT the Plasma 5 `HandleButtonEvents`
+# /`lidAction`, which 6.x silently ignores -> falls back to its Sleep default).
+# Value enum (daemon/powerdevilenums.h): 0=NoAction(do nothing), 1=Sleep,
+# 2=Hibernate, 8=Shutdown, 32=LockScreen, ...  Screen dim/off is a SEPARATE
+# group ([AC][Display]) we deliberately leave alone.
+PD_GROUP=SuspendAndShutdown
+PD_KEY=LidAction
+PD_IDLE_KEY=AutoSuspendAction
+
+# Clear any stale Plasma-5-style keys a previous version of this script wrote.
+clear_legacy_pd() {
+  local p
+  for p in AC Battery LowBattery; do
+    kwriteconfig6 --file powerdevilrc --group "$p" --group HandleButtonEvents --key lidAction --delete 2>/dev/null || true
+  done
+}
+
 reload_powerdevil() {
-  # PowerDevil watches powerdevilrc and reloads on change; the restart just
-  # guarantees it even on older builds. Both are best-effort.
-  systemctl --user try-restart plasma-powerdevil.service 2>/dev/null || true
+  # PowerDevil reloads via a DBus nudge (what System Settings sends), not a file
+  # watch, so a hand-edit needs a reload. Restart is the reliable way in-session.
+  systemctl --user restart plasma-powerdevil.service 2>/dev/null \
+    || qdbus org.kde.Solid.PowerManagement /org/kde/Solid/PowerManagement refreshStatus 2>/dev/null \
+    || true
 }
 
 if [[ "${1:-}" == "--revert" ]]; then
-  kwriteconfig6 --file powerdevilrc --group AC         --group HandleButtonEvents --key lidAction 1
-  kwriteconfig6 --file powerdevilrc --group Battery    --group HandleButtonEvents --key lidAction 1
-  kwriteconfig6 --file powerdevilrc --group LowBattery --group HandleButtonEvents --key lidAction 1
+  clear_legacy_pd
+  kwriteconfig6 --file powerdevilrc --group AC         --group "$PD_GROUP" --key "$PD_KEY" 1
+  kwriteconfig6 --file powerdevilrc --group Battery    --group "$PD_GROUP" --key "$PD_KEY" 1
+  kwriteconfig6 --file powerdevilrc --group LowBattery --group "$PD_GROUP" --key "$PD_KEY" 1
+  # Restore the stock AC idle-suspend (drop our override so the 15-min default returns).
+  kwriteconfig6 --file powerdevilrc --group AC --group "$PD_GROUP" --key "$PD_IDLE_KEY" --delete 2>/dev/null || true
   reload_powerdevil
   sudo rm -f "$LOGIND_SNIPPET"
   # reload (SIGHUP), NOT restart: restarting logind in a live graphical session
@@ -50,10 +75,14 @@ if [[ "${1:-}" == "--revert" ]]; then
   exit 0
 fi
 
-# --- 1. KDE PowerDevil ------------------------------------------------------
-kwriteconfig6 --file powerdevilrc --group AC         --group HandleButtonEvents --key lidAction 0
-kwriteconfig6 --file powerdevilrc --group Battery    --group HandleButtonEvents --key lidAction 1
-kwriteconfig6 --file powerdevilrc --group LowBattery --group HandleButtonEvents --key lidAction 1
+# --- 1. KDE PowerDevil (authority while logged in) --------------------------
+clear_legacy_pd
+kwriteconfig6 --file powerdevilrc --group AC         --group "$PD_GROUP" --key "$PD_KEY" 0
+kwriteconfig6 --file powerdevilrc --group Battery    --group "$PD_GROUP" --key "$PD_KEY" 1
+kwriteconfig6 --file powerdevilrc --group LowBattery --group "$PD_GROUP" --key "$PD_KEY" 1
+# Also disable the AC idle-suspend timer (15-min default) so it stays up like a
+# server; battery/low-battery keep their defaults so an unplugged laptop sleeps.
+kwriteconfig6 --file powerdevilrc --group AC         --group "$PD_GROUP" --key "$PD_IDLE_KEY" 0
 reload_powerdevil
 
 # --- 2. systemd-logind (greeter / TTY / logged-out) -------------------------
@@ -65,6 +94,9 @@ HandleLidSwitchExternalPower=ignore
 HandleLidSwitchDocked=ignore
 # On battery the lid still suspends, so it's safe to carry closed.
 HandleLidSwitch=suspend
+# logind must never idle-suspend on its own (belt-and-suspenders; PowerDevil
+# already governs battery idle). Default is already 'ignore' - pin it explicit.
+IdleAction=ignore
 EOF
 # reload (SIGHUP), NEVER restart: restarting systemd-logind while logged into
 # Plasma/Wayland tears down the seat, crashes the compositor, and bounces you

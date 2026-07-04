@@ -9,6 +9,8 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -81,30 +83,35 @@ fi
 section "2. asus-linux Ecosystem"
 info "Provides: keyboard backlight, fan curves, power profiles, GPU switching."
 
-if ask "Install asus-linux tools (asusctl, supergfxctl, rog-control-center)?"; then
-    # Enable COPR repo if not already enabled
-    if ! dnf copr list 2>/dev/null | grep -q "lukenukem/asus-linux"; then
-        sudo dnf copr enable -y lukenukem/asus-linux
-        ok "COPR repo enabled."
-    else
-        ok "COPR repo already enabled."
+if ask "Install asus-linux tools (asusctl + ROG Control Center)?"; then
+    # Bazzite is atomic: asusctl ships as Homebrew casks from Universal Blue's
+    # tap, NOT dnf/COPR. The root daemon is deployed by asusd-deploy.sh because
+    # brew's cask postflight can't sudo on Bazzite ("password required").
+    if ! command -v brew >/dev/null 2>&1 && [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
     fi
-
-    sudo dnf install -y asusctl supergfxctl rog-control-center
-    sudo systemctl enable --now asusd.service
-    sudo systemctl enable --now supergfxd.service
-
-    ok "asus-linux tools installed and services enabled."
-    info "Run 'asusctl --show-supported' to see available hardware controls."
-
-    # Mask tuned — it overrides asusctl's platform profile and EPP settings,
-    # forcing the CPU governor to 'performance' even when asusctl sets Quiet.
-    if systemctl is-active tuned &>/dev/null || systemctl is-enabled tuned &>/dev/null; then
-        info "Masking tuned service (conflicts with asusctl power profiles)..."
-        sudo systemctl mask --now tuned
-        ok "tuned masked. asusctl will manage power profiles."
+    if ! command -v brew >/dev/null 2>&1; then
+        err "Homebrew not found (expected on Bazzite). Skipping asusctl."
     else
-        ok "tuned already inactive/masked."
+        brew tap ublue-os/tap >/dev/null 2>&1 || true
+        brew trust ublue-os/tap 2>/dev/null || true
+        brew install --cask asusctl-linux rog-control-center-linux
+        "$SCRIPT_DIR/asusd-deploy.sh"
+
+        ok "asusctl installed and asusd deployed."
+        info "Run 'asusctl --show-supported' to see available hardware controls."
+
+        # asusd owns the platform profile on the G14 (auto Performance on AC,
+        # Quiet on battery). Mask tuned/tuned-ppd so they don't fight over the
+        # sysfs knob. Trade-off: KDE's power-profile toggle stops working —
+        # manage profiles via ROG Control Center / asusctl instead.
+        if systemctl is-active tuned &>/dev/null || systemctl is-enabled tuned &>/dev/null; then
+            info "Masking tuned/tuned-ppd (asusd owns power profiles)..."
+            sudo systemctl mask --now tuned tuned-ppd 2>/dev/null || sudo systemctl mask --now tuned
+            ok "tuned masked. asusd manages power profiles."
+        else
+            ok "tuned already inactive/masked."
+        fi
     fi
 else
     info "Skipping asus-linux tools."

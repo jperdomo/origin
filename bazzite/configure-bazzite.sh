@@ -72,6 +72,7 @@ ITEMS=(
   "Desktop Theme|kde-dark|Stock KDE Breeze Dark (revert from macOS; panels kept)|run_path bazzite/scripts/kde-default-dark.sh"
 
   "System Fixes|nmtui|Fix layered NetworkManager-tui conflict|run_path bazzite/scripts/nmtui.sh"
+  "System Fixes|audiopop|Fix HDMI/DP audio pop before every sound  [NEEDS REBOOT]|run_path bazzite/scripts/audio-nopower.sh"
 )
 
 # One-line description per key, shown under each option in the menu (ASCII only
@@ -93,6 +94,7 @@ declare -A DESC=(
   [theme]="WhiteSur dark + purple icons, macOS top bar + dock, removes old bottom bar"
   [kde-dark]="Revert to stock KDE Breeze Dark (colours/deco/icons); panels & dock untouched"
   [nmtui]="Remove layered NetworkManager-tui (base-image conflict)"
+  [audiopop]="Disable snd_hda_intel power saving so the HDA codec stops popping on wake; a trailing pop after sound stops is the monitor's own amp and survives this"
 )
 
 # field accessors (delimiter is '|', fields never contain it)

@@ -1,7 +1,12 @@
 #!/bin/bash
-# Fix HDMI/DP audio pop/crackle on AMD GPUs
-# The HDA codec powers down between sounds and pops on wake and on sleep.
+# Fix the HDMI/DP audio pop that precedes every sound, on AMD GPUs
+# The HDA codec powers down between sounds and pops when it wakes.
 # Disabling power saving keeps the codec always on.
+#
+# This does not fix a trailing pop a beat after sound stops. That one is the
+# monitor muting its own amp once it has seen enough digital silence, and no
+# host-side setting reaches it. Verified on an RX 9070 XT: with power_save=0
+# the codec stays in D0 and the HDMI PCM keeps running, yet the pop remains.
 
 set -e
 

@@ -65,7 +65,7 @@ ITEMS=(
   "Networking & Remote Access|tailscale|Enable Tailscale VPN (then: sudo tailscale up)|setup_tailscale"
 
   "Virtualization & Containers|virt|Virtualization (ujust setup-virtualization)|run_path bazzite/scripts/virt.sh"
-  "Virtualization & Containers|cockpit|Cockpit web console (ujust cockpit)|ujust cockpit enable"
+  "Virtualization & Containers|cockpit|Cockpit web console (podman, port 9090)|run_path bazzite/scripts/cockpit-bazzite.sh"
   "Virtualization & Containers|ollama|Ollama on Podman (ROCm)|run_path bazzite/scripts/ollama-podman.sh"
 
   "Desktop Theme|theme|macOS (WhiteSur) look: dark theme, top bar, dock, single-bar|run_path bazzite/scripts/kde-macos-theme.sh"
@@ -86,10 +86,10 @@ declare -A DESC=(
   [asus]="asusctl + ROG Control Center; deploys the asusd daemon"
   [lighting]="Slash solid/dimmed + keyboard purple; persists at login"
   [m4key]="Bind M4 (XF86Launch1) to launch ROG Control Center"
-  [ssh]="Enable + start sshd (OpenSSH) so you can SSH in; via 'ujust ssh enable'"
-  [tailscale]="Enable the tailscaled daemon (ujust); then run 'sudo tailscale up' to join your tailnet"
+  [ssh]="Enable + start sshd (OpenSSH) so you can SSH in; via 'ujust toggle-ssh enable'"
+  [tailscale]="Enable the tailscaled daemon; then run 'sudo tailscale up' to join your tailnet"
   [virt]="Enable KVM/libvirt via 'ujust setup-virtualization'"
-  [cockpit]="Cockpit web console on https://localhost:9090"
+  [cockpit]="Cockpit web console via podman on https://localhost:9090 (self-signed cert); also enables SSH password auth"
   [ollama]="Ollama LLM server on Podman (ROCm / AMD GPU)"
   [theme]="WhiteSur dark + purple icons, macOS top bar + dock, removes old bottom bar"
   [kde-dark]="Revert to stock KDE Breeze Dark (colours/deco/icons); panels & dock untouched"
@@ -242,15 +242,15 @@ setup_perf() {
 }
 
 setup_ssh() {
-  # Enable the OpenSSH server on boot. Bazzite ships a 'ujust ssh' recipe that
-  # enables+starts sshd (and prints your IP); fall back to systemctl directly.
+  # Enable the OpenSSH server on boot. Bazzite ships a 'ujust toggle-ssh' recipe
+  # that enables+starts sshd (and prints your IP); fall back to systemctl directly.
   local ip; ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
   if systemctl is-enabled --quiet sshd 2>/dev/null; then
     ok "SSH already enabled  (ssh ${USER}@${ip:-<ip>})"; return 0
   fi
   info "Enabling SSH server on boot"
   if command -v ujust >/dev/null 2>&1; then
-    ujust ssh enable
+    ujust toggle-ssh enable
   else
     sudo systemctl enable --now sshd
   fi
@@ -258,17 +258,17 @@ setup_ssh() {
 }
 
 setup_tailscale() {
-  # Enable the tailscaled daemon (via Bazzite's 'ujust tailscale' recipe). That
-  # only starts the service; you still authenticate once with 'sudo tailscale up'.
+  # Enable the tailscaled daemon. That only starts the service; you still
+  # authenticate once with 'sudo tailscale up'.
+  #
+  # Deliberately NOT via ujust: the 'enable-tailscale' recipe body is a bare
+  # 'systemctl enable --now tailscaled.service' with no sudo, so as a normal user
+  # it polkit-prompts or fails. This does the identical thing, correctly.
   if systemctl is-enabled --quiet tailscaled 2>/dev/null; then
     ok "Tailscale daemon already enabled"
   else
     info "Enabling Tailscale daemon"
-    if command -v ujust >/dev/null 2>&1; then
-      ujust tailscale enable
-    else
-      sudo systemctl enable --now tailscaled
-    fi
+    sudo systemctl enable --now tailscaled
     ok "tailscaled enabled"
   fi
   # Connected yet? 'tailscale status' exits nonzero (or says Logged out) when not up.
@@ -412,6 +412,7 @@ item_done() {
     lighting) systemctl --user is-enabled --quiet rog-lighting.service 2>/dev/null ;;
     theme)    [[ -d "${XDG_DATA_HOME:-$HOME/.local/share}/plasma/look-and-feel/com.github.vinceliuice.WhiteSur-dark" ]] ;;
     ollama)   podman container exists ollama 2>/dev/null ;;
+    cockpit)  systemctl is-enabled --quiet cockpit.service 2>/dev/null ;;
     lidserver) [[ -f /etc/systemd/logind.conf.d/99-g14-server-lid.conf ]] ;;
     ssh)       systemctl is-enabled --quiet sshd 2>/dev/null ;;
     tailscale) systemctl is-enabled --quiet tailscaled 2>/dev/null ;;

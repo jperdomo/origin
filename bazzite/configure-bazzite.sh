@@ -64,9 +64,19 @@ ITEMS=(
   "Networking & Remote Access|ssh|Enable SSH server (on boot)|setup_ssh"
   "Networking & Remote Access|tailscale|Enable Tailscale VPN (then: sudo tailscale up)|setup_tailscale"
 
-  "Virtualization & Containers|virt|Virtualization (ujust setup-virtualization)|run_path bazzite/scripts/virt.sh"
-  "Virtualization & Containers|cockpit|Cockpit web console (ujust cockpit)|ujust cockpit enable"
+  "Virtualization & Containers|virt|Enable virtualization: libvirt + virt-manager  [NEEDS REBOOT]|ujust setup-virtualization virt-on"
+  "Virtualization & Containers|virtgroup|Add $USER to the libvirt group|ujust setup-virtualization group"
+  "Virtualization & Containers|vfio|VFIO / IOMMU passthrough drivers  [NEEDS REBOOT]|ujust setup-virtualization vfio-on"
+  "Virtualization & Containers|kvmfr|Looking-Glass kvmfr shared-memory module|ujust setup-virtualization kvmfr"
+  "Virtualization & Containers|usbhp|SPICE USB hot plugging|ujust setup-virtualization usbhp-on"
   "Virtualization & Containers|ollama|Ollama on Podman (ROCm)|run_path bazzite/scripts/ollama-podman.sh"
+
+  "Cockpit Web Console|cockpit|Cockpit web console (cockpit/ws container on :9090)|setup_cockpit"
+  "Cockpit Web Console|cockpit-machines|Virtual Machines page  [NEEDS REBOOT]|setup_cockpit_page cockpit-machines machines"
+  "Cockpit Web Console|cockpit-ostree|Software Updates (rpm-ostree) page  [NEEDS REBOOT]|setup_cockpit_page cockpit-ostree cockpit-ostree"
+  "Cockpit Web Console|cockpit-kdump|Kernel Dump page  [NEEDS REBOOT]|setup_cockpit_page cockpit-kdump kdump"
+  "Cockpit Web Console|cockpit-sosreport|Diagnostic Reports page  [NEEDS REBOOT]|setup_cockpit_page cockpit-sosreport sosreport"
+  "Cockpit Web Console|cockpit-recording|Session Recording page  [NEEDS REBOOT]|setup_cockpit_page cockpit-session-recording session-recording"
 
   "Desktop Theme|theme|macOS (WhiteSur) look: dark theme, top bar, dock, single-bar|run_path bazzite/scripts/kde-macos-theme.sh"
   "Desktop Theme|kde-dark|Stock KDE Breeze Dark (revert from macOS; panels kept)|run_path bazzite/scripts/kde-default-dark.sh"
@@ -88,8 +98,17 @@ declare -A DESC=(
   [m4key]="Bind M4 (XF86Launch1) to launch ROG Control Center"
   [ssh]="Enable + start sshd (OpenSSH) so you can SSH in; via 'ujust ssh enable'"
   [tailscale]="Enable the tailscaled daemon (ujust); then run 'sudo tailscale up' to join your tailnet"
-  [virt]="Enable KVM/libvirt via 'ujust setup-virtualization'"
-  [cockpit]="Cockpit web console on https://localhost:9090"
+  [virt]="virt-manager flatpak + kvm.ignore_msrs kargs + swtpm, via 'ujust setup-virtualization virt-on'; REBOOT to apply"
+  [virtgroup]="Add $USER to the libvirt group so you can manage VMs without sudo; log out/in for it to take effect"
+  [vfio]="IOMMU + vfio-pci kargs for GPU passthrough; also enable IOMMU/VT-d/AMD-v in the BIOS; REBOOT"
+  [kvmfr]="Looking-Glass kvmfr shm module + udev/SELinux rules; experimental, needs VFIO first; ujust asks to confirm"
+  [usbhp]="udev rule tagging USB devices uaccess so SPICE can hot plug them into a running VM"
+  [cockpit]="Cockpit on https://<host>:9090 as the quay.io/cockpit/ws container; also enables sshd + SSH password auth, which the container needs to log into the host"
+  [cockpit-machines]="Virtual Machines page; layers cockpit-machines (pulls in libvirt-dbus + virt-install). Enable the Virtualization items too; REBOOT"
+  [cockpit-ostree]="Software Updates page: review and roll back rpm-ostree deployments from the browser; REBOOT"
+  [cockpit-kdump]="Kernel Dump page: configure kdump crash dumps; REBOOT"
+  [cockpit-sosreport]="Diagnostic Reports page: generate sosreport bundles from the browser; REBOOT"
+  [cockpit-recording]="Session Recording page: record and replay terminal sessions (tlog); REBOOT"
   [ollama]="Ollama LLM server on Podman (ROCm / AMD GPU)"
   [theme]="WhiteSur dark + purple icons, macOS top bar + dock, removes old bottom bar"
   [kde-dark]="Revert to stock KDE Breeze Dark (colours/deco/icons); panels & dock untouched"
@@ -205,6 +224,57 @@ setup_ptyxis() {
     warn "dock config or helper missing; skipped dock change"
   fi
   ok "Ptyxis: default terminal + dark + gray icon + first in dock. Log out/in to settle."
+}
+
+# Bazzite dropped its 'ujust cockpit' recipe, so drive the container install
+# directly. Cockpit here is the quay.io/cockpit/ws podman container: it serves
+# the UI, but authenticates users by SSH-ing into the host, which is why sshd and
+# password auth must be on - without them the login form rejects every password.
+setup_cockpit() {
+  local ip; ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  if systemctl is-enabled --quiet cockpit.service 2>/dev/null; then
+    ok "Cockpit already enabled  ->  https://${ip:-<host>}:9090"; return 0
+  fi
+  warn "Cockpit needs SSH password auth on this host (the ws container logs in over SSH)."
+  info "Enabling sshd + password auth"
+  echo 'PasswordAuthentication yes' | sudo tee /etc/ssh/sshd_config.d/02-enable-passwords.conf >/dev/null
+  sudo systemctl enable --now sshd
+  sudo systemctl try-restart sshd
+
+  info "Installing the cockpit-ws container and its systemd unit"
+  sudo podman container runlabel --name cockpit-ws RUN quay.io/cockpit/ws
+  sudo podman container runlabel INSTALL quay.io/cockpit/ws
+
+  info "Enabling pmlogger (Cockpit's historical metrics graphs)"
+  sudo mkdir -p /var/lib/pcp/tmp /var/log/pcp/pmlogger
+  sudo chown -R pcp:pcp /var/lib/pcp
+  sudo chown pcp:pcp /var/log/pcp/pmlogger
+  sudo systemctl enable --now pmlogger
+
+  sudo systemctl enable --now cockpit.service
+  ok "Cockpit enabled  ->  https://${ip:-<host>}:9090"
+}
+
+# setup_cockpit_page <rpm> <page-dir>
+# Cockpit's pages are ordinary rpms. The ws container serves whatever
+# /usr/share/cockpit the HOST provides, so on an atomic host a page stays missing
+# from the web UI until its rpm is layered and the host reboots - which is why
+# Cockpit can be running fine and still have no Virtual Machines tab.
+setup_cockpit_page() {
+  local pkg="$1" page="$2"
+  if [[ -d "/usr/share/cockpit/$page" ]]; then
+    ok "$pkg already active (/usr/share/cockpit/$page)"; return 0
+  fi
+  if rpm-ostree status 2>/dev/null | grep -qw "$pkg"; then
+    warn "$pkg is layered but its page won't appear until you REBOOT."; return 0
+  fi
+  info "Layering $pkg via rpm-ostree ${BOLD}(REBOOT REQUIRED)${RESET}"
+  if sudo rpm-ostree install "$pkg"; then
+    ok "$pkg layered."
+    warn "${BOLD}REBOOT${RESET} to get its page in the web console."
+  else
+    err "rpm-ostree install $pkg failed."
+  fi
 }
 
 setup_dgpu_boost() {
@@ -415,6 +485,21 @@ item_done() {
     lidserver) [[ -f /etc/systemd/logind.conf.d/99-g14-server-lid.conf ]] ;;
     ssh)       systemctl is-enabled --quiet sshd 2>/dev/null ;;
     tailscale) systemctl is-enabled --quiet tailscaled 2>/dev/null ;;
+    # Virtualization: ujust installs virt-manager as a flatpak (its own 'rpm -q
+    # virt-manager' gate never matches), and the kargs only count once booted.
+    virt)      flatpak info org.virt_manager.virt-manager >/dev/null 2>&1 ;;
+    virtgroup) id -nG 2>/dev/null | grep -qw libvirt ;;
+    vfio)      grep -q "rd.driver.pre=vfio-pci" /proc/cmdline ;;
+    kvmfr)     [[ -f /etc/modprobe.d/kvmfr.conf ]] ;;
+    usbhp)     [[ -f /etc/udev/rules.d/72-usbhp.rules ]] ;;
+    # Cockpit pages: present == the rpm is layered AND booted. Note cockpit-ostree
+    # installs to cockpit-ostree/, not ostree/.
+    cockpit)           systemctl is-enabled --quiet cockpit.service 2>/dev/null ;;
+    cockpit-machines)  [[ -d /usr/share/cockpit/machines ]] ;;
+    cockpit-ostree)    [[ -d /usr/share/cockpit/cockpit-ostree ]] ;;
+    cockpit-kdump)     [[ -d /usr/share/cockpit/kdump ]] ;;
+    cockpit-sosreport) [[ -d /usr/share/cockpit/sosreport ]] ;;
+    cockpit-recording) [[ -d /usr/share/cockpit/session-recording ]] ;;
     *)        return 1 ;;   # unknown/unchecked -> treat as not-done
   esac
 }
@@ -445,7 +530,7 @@ list_optional() {
   while IFS= read -r g; do
     echo "  ${BOLD}$g${RESET}"
     for item in "${ITEMS[@]}"; do
-      [[ "$(f_group "$item")" == "$g" ]] && printf "    %-9s %s\n" "$(f_key "$item")" "$(f_label "$item")"
+      [[ "$(f_group "$item")" == "$g" ]] && printf "    %-18s %s\n" "$(f_key "$item")" "$(f_label "$item")"
     done
   done < <(groups_in_order)
 }

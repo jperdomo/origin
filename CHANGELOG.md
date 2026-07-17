@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `bazzite/scripts/no-sleep.sh` (via the `nosleep` option): never suspend or hibernate, so SSH/Cockpit stay reachable. Masks all five sleep targets, which sits under the actual culprit on Bazzite — Steam Game Mode's own idle timer calls suspend over DBus through logind, and `logind`'s `IdleAction` / KDE PowerDevil are both innocent. `--revert` / `--status`; warns on laptops (use `lidserver` instead) and when VMs are running
 - `bazzite/configure-bazzite.sh`: grouped two-phase TUI configurator for a fresh Bazzite install (pick sections, then toggle items per section); idempotent, re-runnable, with a `NO_TUI` numbered fallback. Options: brave, ptyxis, perf, dboost, asus, lighting, m4key, virt, cockpit, ollama, theme, kde-dark, nmtui
 - G14 asusctl setup: `g14/asusd-deploy.sh` (deploy the asusd root daemon on atomic Bazzite, since the brew cask postflight can't sudo), `g14/lighting.sh` + `g14/lighting-service.sh` (slash solid/dimmed + keyboard colour, re-applied at login), `g14/m4-bind.sh` (bind the M4 key / XF86Launch1 to ROG Control Center)
 - `bazzite/kde-macos-theme.sh` + helpers (`kde-remove-full-bottom-panel.py`, `kde-remove-mac-panels.py`, `kde-dock-launchers.py`, `pin-to-dock.sh`): WhiteSur macOS look applied non-destructively (no `--resetLayout`) with a native top bar + floating dock, persistent panel edits (stop plasmashell → edit config → restart), and lock-screen wallpaper sync

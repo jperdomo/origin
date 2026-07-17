@@ -56,6 +56,7 @@ ITEMS=(
   "Power & Performance|perf|Set Performance power profile|setup_perf"
   "Power & Performance|dboost|Enable NVIDIA Dynamic Boost (fixes dGPU stuck at 180MHz)|setup_dgpu_boost"
   "Power & Performance|lidserver|Run like a server: lid closed on AC stays awake|run_path bazzite/scripts/lid-server.sh"
+  "Power & Performance|nosleep|Never sleep: mask suspend/hibernate (headless server)|run_path bazzite/scripts/no-sleep.sh"
 
   "G14 Hardware & Lighting|asus|Install asusctl + ROG Control Center|setup_asus"
   "G14 Hardware & Lighting|lighting|Slash solid/dimmed + keyboard colour|setup_lighting"
@@ -93,6 +94,7 @@ declare -A DESC=(
   [perf]="Performance power profile (moot on G14: asusd owns it)"
   [dboost]="Enable nvidia-powerd (Dynamic Boost) so the laptop dGPU can raise clocks under load"
   [lidserver]="Lid closed on AC keeps running (KDE + logind); on battery it still suspends"
+  [nosleep]="Masks all 5 sleep targets so nothing can suspend it - incl. the Steam Game Mode idle timer, the usual culprit. Keeps SSH/Cockpit always reachable. Not for laptops you carry (use lidserver)"
   [asus]="asusctl + ROG Control Center; deploys the asusd daemon"
   [lighting]="Slash solid/dimmed + keyboard purple; persists at login"
   [m4key]="Bind M4 (XF86Launch1) to launch ROG Control Center"
@@ -455,6 +457,7 @@ item_done() {
     ollama)   podman container exists ollama 2>/dev/null ;;
     cockpit)  systemctl is-enabled --quiet cockpit.service 2>/dev/null ;;
     lidserver) [[ -f /etc/systemd/logind.conf.d/99-g14-server-lid.conf ]] ;;
+    nosleep)   [[ "$(systemctl is-enabled sleep.target 2>/dev/null || true)" == "masked" ]] ;;
     ssh)       systemctl is-enabled --quiet sshd 2>/dev/null ;;
     tailscale) systemctl is-enabled --quiet tailscaled 2>/dev/null ;;
     # Virtualization: ujust installs virt-manager as a flatpak (its own 'rpm -q

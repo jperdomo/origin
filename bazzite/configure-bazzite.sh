@@ -71,7 +71,7 @@ ITEMS=(
   "Virtualization & Containers|usbhp|SPICE USB hot plugging|ujust setup-virtualization usbhp-on"
   "Virtualization & Containers|ollama|Ollama on Podman (ROCm)|run_path bazzite/scripts/ollama-podman.sh"
 
-  "Cockpit Web Console|cockpit|Cockpit web console (cockpit/ws container on :9090)|setup_cockpit"
+  "Cockpit Web Console|cockpit|Cockpit web console (podman, port 9090)|run_path bazzite/scripts/cockpit-bazzite.sh"
   "Cockpit Web Console|cockpit-machines|Virtual Machines page  [NEEDS REBOOT]|setup_cockpit_page cockpit-machines machines"
   "Cockpit Web Console|cockpit-ostree|Software Updates (rpm-ostree) page  [NEEDS REBOOT]|setup_cockpit_page cockpit-ostree cockpit-ostree"
   "Cockpit Web Console|cockpit-kdump|Kernel Dump page  [NEEDS REBOOT]|setup_cockpit_page cockpit-kdump kdump"
@@ -96,14 +96,14 @@ declare -A DESC=(
   [asus]="asusctl + ROG Control Center; deploys the asusd daemon"
   [lighting]="Slash solid/dimmed + keyboard purple; persists at login"
   [m4key]="Bind M4 (XF86Launch1) to launch ROG Control Center"
-  [ssh]="Enable + start sshd (OpenSSH) so you can SSH in; via 'ujust ssh enable'"
-  [tailscale]="Enable the tailscaled daemon (ujust); then run 'sudo tailscale up' to join your tailnet"
+  [ssh]="Enable + start sshd (OpenSSH) so you can SSH in; via 'ujust toggle-ssh enable'"
+  [tailscale]="Enable the tailscaled daemon; then run 'sudo tailscale up' to join your tailnet"
   [virt]="virt-manager flatpak + kvm.ignore_msrs kargs + swtpm, via 'ujust setup-virtualization virt-on'; REBOOT to apply"
   [virtgroup]="Add $USER to the libvirt group so you can manage VMs without sudo; log out/in for it to take effect"
   [vfio]="IOMMU + vfio-pci kargs for GPU passthrough; also enable IOMMU/VT-d/AMD-v in the BIOS; REBOOT"
   [kvmfr]="Looking-Glass kvmfr shm module + udev/SELinux rules; experimental, needs VFIO first; ujust asks to confirm"
   [usbhp]="udev rule tagging USB devices uaccess so SPICE can hot plug them into a running VM"
-  [cockpit]="Cockpit on https://<host>:9090 as the quay.io/cockpit/ws container; also enables sshd + SSH password auth, which the container needs to log into the host"
+  [cockpit]="Cockpit web console via podman on https://localhost:9090 (self-signed cert); also enables SSH password auth"
   [cockpit-machines]="Virtual Machines page; layers cockpit-machines (pulls in libvirt-dbus + virt-install). Enable the Virtualization items too; REBOOT"
   [cockpit-ostree]="Software Updates page: review and roll back rpm-ostree deployments from the browser; REBOOT"
   [cockpit-kdump]="Kernel Dump page: configure kdump crash dumps; REBOOT"
@@ -226,35 +226,6 @@ setup_ptyxis() {
   ok "Ptyxis: default terminal + dark + gray icon + first in dock. Log out/in to settle."
 }
 
-# Bazzite dropped its 'ujust cockpit' recipe, so drive the container install
-# directly. Cockpit here is the quay.io/cockpit/ws podman container: it serves
-# the UI, but authenticates users by SSH-ing into the host, which is why sshd and
-# password auth must be on - without them the login form rejects every password.
-setup_cockpit() {
-  local ip; ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
-  if systemctl is-enabled --quiet cockpit.service 2>/dev/null; then
-    ok "Cockpit already enabled  ->  https://${ip:-<host>}:9090"; return 0
-  fi
-  warn "Cockpit needs SSH password auth on this host (the ws container logs in over SSH)."
-  info "Enabling sshd + password auth"
-  echo 'PasswordAuthentication yes' | sudo tee /etc/ssh/sshd_config.d/02-enable-passwords.conf >/dev/null
-  sudo systemctl enable --now sshd
-  sudo systemctl try-restart sshd
-
-  info "Installing the cockpit-ws container and its systemd unit"
-  sudo podman container runlabel --name cockpit-ws RUN quay.io/cockpit/ws
-  sudo podman container runlabel INSTALL quay.io/cockpit/ws
-
-  info "Enabling pmlogger (Cockpit's historical metrics graphs)"
-  sudo mkdir -p /var/lib/pcp/tmp /var/log/pcp/pmlogger
-  sudo chown -R pcp:pcp /var/lib/pcp
-  sudo chown pcp:pcp /var/log/pcp/pmlogger
-  sudo systemctl enable --now pmlogger
-
-  sudo systemctl enable --now cockpit.service
-  ok "Cockpit enabled  ->  https://${ip:-<host>}:9090"
-}
-
 # setup_cockpit_page <rpm> <page-dir>
 # Cockpit's pages are ordinary rpms. The ws container serves whatever
 # /usr/share/cockpit the HOST provides, so on an atomic host a page stays missing
@@ -312,15 +283,15 @@ setup_perf() {
 }
 
 setup_ssh() {
-  # Enable the OpenSSH server on boot. Bazzite ships a 'ujust ssh' recipe that
-  # enables+starts sshd (and prints your IP); fall back to systemctl directly.
+  # Enable the OpenSSH server on boot. Bazzite ships a 'ujust toggle-ssh' recipe
+  # that enables+starts sshd (and prints your IP); fall back to systemctl directly.
   local ip; ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
   if systemctl is-enabled --quiet sshd 2>/dev/null; then
     ok "SSH already enabled  (ssh ${USER}@${ip:-<ip>})"; return 0
   fi
   info "Enabling SSH server on boot"
   if command -v ujust >/dev/null 2>&1; then
-    ujust ssh enable
+    ujust toggle-ssh enable
   else
     sudo systemctl enable --now sshd
   fi
@@ -328,17 +299,17 @@ setup_ssh() {
 }
 
 setup_tailscale() {
-  # Enable the tailscaled daemon (via Bazzite's 'ujust tailscale' recipe). That
-  # only starts the service; you still authenticate once with 'sudo tailscale up'.
+  # Enable the tailscaled daemon. That only starts the service; you still
+  # authenticate once with 'sudo tailscale up'.
+  #
+  # Deliberately NOT via ujust: the 'enable-tailscale' recipe body is a bare
+  # 'systemctl enable --now tailscaled.service' with no sudo, so as a normal user
+  # it polkit-prompts or fails. This does the identical thing, correctly.
   if systemctl is-enabled --quiet tailscaled 2>/dev/null; then
     ok "Tailscale daemon already enabled"
   else
     info "Enabling Tailscale daemon"
-    if command -v ujust >/dev/null 2>&1; then
-      ujust tailscale enable
-    else
-      sudo systemctl enable --now tailscaled
-    fi
+    sudo systemctl enable --now tailscaled
     ok "tailscaled enabled"
   fi
   # Connected yet? 'tailscale status' exits nonzero (or says Logged out) when not up.
@@ -482,6 +453,7 @@ item_done() {
     lighting) systemctl --user is-enabled --quiet rog-lighting.service 2>/dev/null ;;
     theme)    [[ -d "${XDG_DATA_HOME:-$HOME/.local/share}/plasma/look-and-feel/com.github.vinceliuice.WhiteSur-dark" ]] ;;
     ollama)   podman container exists ollama 2>/dev/null ;;
+    cockpit)  systemctl is-enabled --quiet cockpit.service 2>/dev/null ;;
     lidserver) [[ -f /etc/systemd/logind.conf.d/99-g14-server-lid.conf ]] ;;
     ssh)       systemctl is-enabled --quiet sshd 2>/dev/null ;;
     tailscale) systemctl is-enabled --quiet tailscaled 2>/dev/null ;;

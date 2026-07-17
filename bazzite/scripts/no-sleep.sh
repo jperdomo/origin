@@ -85,7 +85,12 @@ fi
 # filesystems, and libvirt only registers a 'delay' inhibitor - which slows
 # suspend down but does not veto it. Worth saying out loud, since a VM host is
 # exactly the machine you'd run this on.
-if command -v virsh >/dev/null 2>&1 && [[ -n "$(virsh -q list --name 2>/dev/null | tr -d '[:space:]')" ]]; then
+#
+# -c qemu:///system is REQUIRED, not decoration: as a non-root user virsh
+# defaults to qemu:///session, which is a different, usually-empty per-user
+# libvirt instance. Without this the check queries the wrong hypervisor, finds
+# nothing, and silently never warns (it read empty here while 'alpha' was up).
+if command -v virsh >/dev/null 2>&1 && [[ -n "$(virsh -q -c qemu:///system list --name 2>/dev/null | tr -d '[:space:]')" ]]; then
   echo ":: VMs are running here - masking sleep also protects them from a" >&2
   echo "   mid-flight host suspend (libvirt's inhibitor only delays, never vetoes)." >&2
   echo >&2

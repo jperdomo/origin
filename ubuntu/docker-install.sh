@@ -19,7 +19,7 @@ sudo apt update
 
 apt-cache policy docker-ce
 
-sudo apt install -y docker-ce docker-compose
+sudo apt install -y docker-ce docker-compose-plugin
 
 sudo systemctl status docker
 

@@ -27,12 +27,12 @@ if [ -n "$gh_user" ]; then
     sudo -u "$target_user" ssh-import-id "gh:$gh_user"
 fi
 
-# Allow password login? (default: yes)
-read -r -p "Allow password authentication? [Y/n]: " allow_pw
-if [[ "$allow_pw" =~ ^[Nn]$ ]]; then
-    pw_auth="no"
-else
+# Allow password login? (default: no — key auth only)
+read -r -p "Allow password authentication? [y/N]: " allow_pw
+if [[ "$allow_pw" =~ ^[Yy]$ ]]; then
     pw_auth="yes"
+else
+    pw_auth="no"
 fi
 
 # Harden SSH

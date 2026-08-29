@@ -1,11 +1,12 @@
 #!/bin/bash
 set -e
 
-# Tailscale IPs
-VOYAGER_TS_IP="100.95.118.79"
-VOYAGER_HOSTNAME="voyager"
-MSA01_TS_IP="100.82.202.45"
-MSA01_HOSTNAME="ms-a01"
+# Tailscale node identities — set these in the environment (or a gitignored
+# config sourced before running). No real addresses live in this repo.
+: "${VOYAGER_TS_IP:?set VOYAGER_TS_IP (e.g. export VOYAGER_TS_IP=100.x.y.z)}"
+: "${VOYAGER_HOSTNAME:?set VOYAGER_HOSTNAME}"
+: "${MSA01_TS_IP:?set MSA01_TS_IP}"
+: "${MSA01_HOSTNAME:?set MSA01_HOSTNAME}"
 
 # --- Pre-flight checks ---
 

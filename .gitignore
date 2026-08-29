@@ -1,9 +1,6 @@
 # macOS
 .DS_Store
 
-# Browser profiles
-.mozilla/
-
 # Environment
 .env
 

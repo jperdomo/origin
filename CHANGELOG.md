@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - debian/flatpak-install.sh: fix "Flatak" typo
 
 ### Removed
-- Remove others/ directory (Firefox profile, misc scripts, selector)
+- Remove others/ directory (misc scripts, selector)
 - Remove mac/#archive/ directory (contained hardcoded personal info)
 - Remove rclone/ directory (hardcoded personal paths)
 - Remove rsync/ directory (hardcoded IP, example script)

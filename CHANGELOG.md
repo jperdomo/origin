@@ -20,7 +20,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - MIT LICENSE file
 - .gitignore entries for #archive/, editor files, .vscode/, .idea/, Thumbs.db
 - `set -e` to all scripts (exit on error)
-- `.gitattributes` for line ending normalization
 
 ### Changed
 - g14/setup-g14.sh: rewrite the asusctl section for atomic Bazzite (brew casks + `asusd-deploy.sh`, not dnf/COPR); asusd owns the platform profile so tuned/tuned-ppd are masked

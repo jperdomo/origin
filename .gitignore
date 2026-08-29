@@ -3,6 +3,27 @@
 
 # Environment
 .env
+.env.*
+!.env.example
+
+# Secrets / credentials
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+id_ecdsa*
+known_hosts
+authorized_keys
+.ssh/
+
+# Browser / app data
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.xpi
+*.db
 
 # Claude Code
 .claude/
@@ -23,6 +44,13 @@ SECURITY-REVIEW.md
 *~
 .vscode/
 .idea/
+
+# Python
+__pycache__/
+.venv/
+
+# Logs
+*.log
 
 # Windows
 Thumbs.db

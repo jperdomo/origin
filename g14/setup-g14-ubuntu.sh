@@ -115,7 +115,11 @@ if command -v cargo &>/dev/null && command -v rustc &>/dev/null; then
     ok "Rust already installed: $(rustc --version)"
 else
     if ask "Install Rust via rustup (per-user, ~/.cargo)?"; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+        RUSTUP_INIT=$(mktemp)
+        trap 'rm -f "$RUSTUP_INIT"' EXIT
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o "$RUSTUP_INIT"
+        echo "6c30b75a75b28a96fd913a037c8581b580080b6ee9b8169a3c0feb1af7fe8caf  $RUSTUP_INIT" | sha256sum -c - >/dev/null
+        sh "$RUSTUP_INIT" -y --default-toolchain stable
         # shellcheck disable=SC1091
         source "$HOME/.cargo/env"
         ok "Rust installed: $(rustc --version)"

@@ -102,7 +102,8 @@ load_env_file() {
 
 apply_defaults() {
     : "${SRC_PORT:=22}"
-    : "${SRC_SSH_OPTS:=-o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=20}"
+    : "${SRC_KNOWN_HOSTS:=$SCRIPT_DIR/state/known_hosts}"
+    : "${SRC_SSH_OPTS:=-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$SRC_KNOWN_HOSTS -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=20}"
     : "${SRC_SSH_PWFILE:=$SCRIPT_DIR/state/src-ssh-pwd}"
     : "${WG_IFACE:=wg0}"
     : "${WG_DST_ADDR:=10.99.0.1}"
@@ -247,6 +248,12 @@ Run ./setup.sh first."
 Run ./setup.sh first."
     [[ -r "${SRC_SSH_KEY}.pub" ]] || die "SRC_SSH_KEY public half not found: ${SRC_SSH_KEY}.pub
 Run ./setup.sh first."
+
+    # known_hosts must exist and contain the source host key (pinned by setup.sh)
+    if [[ ! -r "$SRC_KNOWN_HOSTS" ]] || ! grep -q "^\[${SRC_HOST}\]:${SRC_PORT} " "$SRC_KNOWN_HOSTS" 2>/dev/null; then
+        die "source host key not pinned in $SRC_KNOWN_HOSTS
+Run ./setup.sh first (it pins the key), or set SRC_KNOWN_HOSTS."
+    fi
 
     if [[ "$SKIP_AUTHKEY_CHECK" != "1" && -r "$HOME/.ssh/authorized_keys" ]]; then
         local pubfp
@@ -486,7 +493,7 @@ transfer_path() {
                 chmod 600 /root/.ssh-rw/id_ed25519
                 rsync $RSYNC_FLAGS $excludes_args \
                     --files-from=/items.txt \
-                    -e \"ssh -i /root/.ssh-rw/id_ed25519 -o UserKnownHostsFile=/tmp/known_hosts -o StrictHostKeyChecking=accept-new\" \
+                    -e \\\"ssh -i /root/.ssh-rw/id_ed25519 -o UserKnownHostsFile=/tmp/known_hosts -o StrictHostKeyChecking=yes\\\" \\
                     /media/ \
                     \$UBUNTU_USER@\$WG_SERVER_ADDR:\$DST_DIR/
             '" >"$logfile" 2>&1

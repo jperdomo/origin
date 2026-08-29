@@ -22,6 +22,7 @@ WG_DIR="$STATE_DIR/wg"
 SSH_DIR="$STATE_DIR/ssh"
 NET_ENV="$STATE_DIR/network.env"
 PWFILE="$STATE_DIR/src-ssh-pwd"
+KNOWN_HOSTS="$STATE_DIR/known_hosts"
 
 WG_IFACE="${WG_IFACE:-wg0}"
 WG_PORT="${WG_PORT:-51820}"
@@ -75,9 +76,21 @@ prompt_password() {
 
 src_ssh() {
     SSHPASS=$(<"$PWFILE") sshpass -e ssh \
-        -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
+        -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$KNOWN_HOSTS" \
+        -o ConnectTimeout=15 \
         -o ServerAliveInterval=30 -o ServerAliveCountMax=20 \
         -p "$SRC_PORT" "$SRC_USER@$SRC_HOST" "$@"
+}
+
+# Pin the source host key before first use (replaces accept-new).
+pin_host_key() {
+    if [[ ! -r "$KNOWN_HOSTS" ]] || ! grep -q "^\[${SRC_HOST}\]:${SRC_PORT} " "$KNOWN_HOSTS" 2>/dev/null; then
+        log "  pinning host key for ${SRC_HOST}:${SRC_PORT} -> $KNOWN_HOSTS"
+        ( umask 077; ssh-keyscan -p "$SRC_PORT" -T 10 "$SRC_HOST" >"$KNOWN_HOSTS" 2>/dev/null )
+        if ! grep -q "^\[${SRC_HOST}\]:${SRC_PORT} " "$KNOWN_HOSTS" 2>/dev/null; then
+            die "could not fetch host key for ${SRC_HOST}:${SRC_PORT}"
+        fi
+    fi
 }
 
 # ---- [1/8] WireGuard tools on destination ---------------------------------
@@ -93,6 +106,7 @@ log "  $(wg --version 2>&1 | head -1)"
 require_tools
 prompt_src
 prompt_password
+pin_host_key
 
 # ---- [2/8] WG keypairs ----------------------------------------------------
 

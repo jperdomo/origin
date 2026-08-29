@@ -18,13 +18,13 @@ Distilled from a one-off NAS migration pattern that pushed 1.7 TB at ~14 MB/s.
 
 Or fully via env, no `.env`:
 
-    SRC_PATHS=/volume2/Media/TV,/volume2/Media/Movies \
+    SRC_PATHS=/volumeX/Media/TV,/volumeX/Media/Movies \
     DST_DIR=/mnt/media \
     ./wg-rsync.sh
 
 Or positional paths:
 
-    ./wg-rsync.sh /volume2/Media/TV /volume2/Media/Movies
+    ./wg-rsync.sh /volumeX/Media/TV /volumeX/Media/Movies
 
 ## What `setup.sh` does (one-time)
 

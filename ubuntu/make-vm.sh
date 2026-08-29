@@ -194,7 +194,9 @@ else
         FIDO_DIR=$(mktemp -d)
         echo "Fetching Fido and resolving Win11 Pro English (US) x64 download URL..."
         curl -fsSL -o "$FIDO_DIR/Fido.ps1" \
-            https://raw.githubusercontent.com/pbatard/Fido/master/Fido.ps1
+            https://raw.githubusercontent.com/pbatard/Fido/v1.70/Fido.ps1
+        # Pin Fido v1.70 (release tag, not floating master)
+        echo "24c86067fa399d2fd75ef0693a2ec79ca8db162827f808caac03541cbf640c13  $FIDO_DIR/Fido.ps1" | sha256sum -c - >/dev/null
         # Fido is Windows-targeted; spoof Get-Platform-Version to bypass the
         # "non Windows platforms are too much of a liability" gate (line ~73).
         # -PlatformArch x64 separately bypasses Get-CimInstance (Windows-only WMI).
@@ -347,10 +349,11 @@ EOF
 EOF
     fi
     cat <<EOF
-    - "curtin in-target --target=/target -- runuser -u $USERNAME -- git clone https://github.com/jperdomo/origin.git /home/$USERNAME/origin"
+    - "curtin in-target --target=/target -- runuser -u $USERNAME -- git clone https://github.com/jperdomo/origin.git /home/$USERNAME/origin && git -C /home/$USERNAME/origin checkout a093b57c98c200642f469b17f44aa41f3991a4c4"
 EOF
     } > "$WORK/user-data"
     cloud-localds "$SEED" "$WORK/user-data" "$WORK/meta-data"
+    chmod 0600 "$SEED"
 else
     if (( RDP )); then
         RDP_DENY_VAL=false
@@ -490,7 +493,7 @@ else
         <SynchronousCommand wcm:action="add">
           <Order>3</Order>
           <Description>Clone origin repo</Description>
-          <CommandLine>cmd.exe /c "&quot;C:\Program Files\Git\bin\git.exe&quot; clone https://github.com/jperdomo/origin.git %USERPROFILE%\origin"</CommandLine>
+          <CommandLine>cmd.exe /c "&quot;C:\Program Files\Git\bin\git.exe&quot; clone https://github.com/jperdomo/origin.git %USERPROFILE%\origin &amp;&amp; &quot;C:\Program Files\Git\bin\git.exe&quot; -C %USERPROFILE%\origin checkout a093b57c98c200642f469b17f44aa41f3991a4c4"</CommandLine>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
           <Order>4</Order>

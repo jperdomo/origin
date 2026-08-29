@@ -144,6 +144,19 @@ fi
 log "  LAN IP    : $LAN_IP  (port-forward target)"
 log "  WG tunnel : server $WG_SERVER_ADDR  client $WG_CLIENT_ADDR  port $WG_PORT iface $WG_IFACE"
 
+# ---- validate before persisting (values are later sourced by wg-rsync.sh) ----
+valid_ip() { [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] && { local IFS=. a; read -ra a <<<"$1"; (( a[0]<=255 && a[1]<=255 && a[2]<=255 && a[3]<=255 )); }; }
+valid_host() { [[ "$1" =~ ^[A-Za-z0-9._-]+$ ]] && [[ "$1" != -* ]]; }
+valid_user() { [[ "$1" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]]; }
+valid_port() { [[ "$1" =~ ^[0-9]+$ ]] && (( $1 >= 1 && $1 <= 65535 )); }
+
+[[ -n "$PUBLIC_IP" ]] && ! valid_ip "$PUBLIC_IP" && die "invalid PUBLIC_IP: $PUBLIC_IP"
+[[ -n "$LAN_IP" ]] && ! valid_ip "$LAN_IP" && die "invalid LAN_IP: $LAN_IP"
+[[ -n "$SRC_USER" ]] && ! valid_user "$SRC_USER" && die "invalid SRC_USER: $SRC_USER"
+[[ -n "$SRC_HOST" ]] && ! valid_host "$SRC_HOST" && die "invalid SRC_HOST: $SRC_HOST"
+[[ -n "$SRC_PORT" ]] && ! valid_port "$SRC_PORT" && die "invalid SRC_PORT: $SRC_PORT"
+[[ -n "$WG_PORT" ]] && ! valid_port "$WG_PORT" && die "invalid WG_PORT: $WG_PORT"
+
 cat >"$NET_ENV" <<EOF
 PUBLIC_IP=$PUBLIC_IP
 LAN_IP=$LAN_IP

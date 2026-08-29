@@ -11,8 +11,15 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 LOCK_FILE="${WG_RSYNC_LOCK:-/tmp/wg-rsync.lock}"
+
+# Refuse a symlinked lock file (symlink attack: O_CREAT|O_TRUNC on a
+# pre-planted link would truncate the target).
+if [[ -L "$LOCK_FILE" ]]; then
+    echo "refusing symlinked lock file: $LOCK_FILE" >&2
+    exit 1
+fi
 
 CLI_PATHS=()
 EXTRA_ENV_FILES=()
@@ -66,7 +73,7 @@ load_env_file() {
     local f="$1"
     [[ -r "$f" ]] || return 0
     log "loading env from $f"
-    local line key
+    local line key value
     while IFS= read -r line || [[ -n "$line" ]]; do
         [[ "$line" =~ ^[[:space:]]*# ]] && continue
         [[ "$line" =~ ^[[:space:]]*$ ]] && continue
@@ -75,7 +82,20 @@ load_env_file() {
         key="${key// /}"
         [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
         if [[ -z "${!key+x}" ]]; then
-            eval "export $line"
+            value="${line#*=}"
+            # strip one layer of matching surrounding quotes
+            if [[ ${#value} -ge 2 ]]; then
+                local first="${value:0:1}" last="${value: -1}"
+                if [[ "$first" == '"' && "$last" == '"' ]] || [[ "$first" == "'" && "$last" == "'" ]]; then
+                    value="${value:1:${#value}-2}"
+                fi
+            fi
+            # reject shell metacharacters — never eval values from env files
+            if printf '%s' "$value" | grep -qE '[\$`;|&()<>]'; then
+                log "skipping $key: value contains shell metacharacters"
+                continue
+            fi
+            export "$key=$value"
         fi
     done <"$f"
 }
@@ -169,9 +189,29 @@ parse_args() {
 
 # ---- preflight -------------------------------------------------------------
 
+# Reject shell metacharacters in any value that gets interpolated into a
+# remote command or container run line. Values come from env files, prompts,
+# and network responses; none of them may carry shell syntax.
+validate_config() {
+    local bad=()
+    local v
+    for v in SRC_USER SRC_HOST SRC_PORT SRC_PATHS DST_DIR DST_USER \
+             WG_IFACE WG_DST_ADDR WG_CLIENT_CONF_REMOTE SRC_SSH_KEY_REMOTE \
+             IMAGE ENGINE ENGINE_SUDO CONTAINER_NAME_PREFIX BUCKET_DIR_REMOTE \
+             RSYNC_FLAGS EXCLUDES; do
+        if [[ -n "${!v:-}" ]] && printf '%s' "${!v}" | grep -qE '[\$`;|&()<>"'"'"']'; then
+            bad+=("$v")
+        fi
+    done
+    if ((${#bad[@]} > 0)); then
+        die "config values contain shell metacharacters: ${bad[*]}"
+    fi
+}
+
 preflight() {
     banner "[0/5] Preflight (destination)"
     require_tools
+    validate_config
 
     log "checking WG interface $WG_IFACE on destination"
     if ! sudo wg show "$WG_IFACE" >/dev/null 2>&1; then
@@ -258,6 +298,10 @@ push_if_differs() {
     local_hash=$(sha256sum "$local_path" | cut -d' ' -f1)
     remote_hash=$(remote_sha256 "$remote_path")
     if [[ "$FORCE_BOOTSTRAP" == "1" || "$local_hash" != "$remote_hash" ]]; then
+        # refuse a pre-planted symlink at the remote path (symlink attack)
+        if src_ssh "test -L '$remote_path'" 2>/dev/null; then
+            die "refusing to overwrite symlink on source: $remote_path"
+        fi
         log "  pushing $local_path -> source:$remote_path"
         src_ssh "umask 077; cat > '$remote_path'" <"$local_path"
     else

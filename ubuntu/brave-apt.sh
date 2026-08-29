@@ -7,6 +7,7 @@ sudo apt install -y curl jq
 
 sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg \
   https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+echo "c85e85aa3d1783ffaa649ee8dbbc22af7f87192d304602d37e3018226b394788  /usr/share/keyrings/brave-browser-archive-keyring.gpg" | sudo sha256sum -c - >/dev/null
 sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-release.sources \
   https://brave-browser-apt-release.s3.brave.com/brave-browser.sources
 

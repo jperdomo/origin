@@ -650,7 +650,16 @@ run_keys() {
     if [[ -n "${DRY_RUN:-}" ]]; then
       echo "[dry-run] would run: $(f_action "$item")"
     else
-      eval "$(f_action "$item")" || err "Setup '$key' failed (continuing)"
+      # dispatch on the action's first word — no eval
+      local action; action="$(f_action "$item")"
+      local -a words; read -r -a words <<<"$action"
+      local cmd="${words[0]:-}"
+      case "$cmd" in
+        run_path) run_path "${words[1]:-}" "${words[@]:2}" || err "Setup '$key' failed (continuing)" ;;
+        ujust)    ujust "${words[@]:1}" || err "Setup '$key' failed (continuing)" ;;
+        setup_*|run_*) "$cmd" "${words[@]:1}" || err "Setup '$key' failed (continuing)" ;;
+        *) err "Setup '$key': unknown action '$cmd' (continuing)" ;;
+      esac
     fi
   done
   # warn about unknown keys

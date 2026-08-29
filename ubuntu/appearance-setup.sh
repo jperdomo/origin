@@ -77,6 +77,9 @@ install_gnome_extension() {
         if [ -n "$dl_path" ] && [ "$dl_path" != "null" ]; then
             tmp=$(mktemp -d)
             curl -fsSL "https://extensions.gnome.org${dl_path}" -o "$tmp/ext.zip"
+            # EGO serves versioned bundles (no stable checksum to pin); verify
+            # the payload is a valid zip before installing.
+            unzip -t "$tmp/ext.zip" >/dev/null 2>&1 || { echo "WARN: $uuid download is not a valid zip" >&2; rm -rf "$tmp"; return 1; }
             gnome-extensions install --force "$tmp/ext.zip"
             rm -rf "$tmp"
         else

@@ -39,16 +39,9 @@ if [ "$(sudo virsh pool-info "$POOL_NAME" | awk '/^State:/ {print $2}')" != "run
 fi
 sudo virsh pool-autostart "$POOL_NAME" >/dev/null
 
-# Let QEMU/virtiofsd (running as libvirt-qemu) traverse into the user's home so
-# virtiofs shares of any subdirectory are readable from guests. Home dirs default
-# to 0750, which blocks libvirt-qemu from descending into them.
-TARGET_HOME=$(getent passwd "$TARGET_USER" | awk -F: '{print $6}')
-if [ -n "$TARGET_HOME" ] && [ -d "$TARGET_HOME" ]; then
-    sudo setfacl -m u:libvirt-qemu:rx "$TARGET_HOME"
-fi
-
-# Optional: grant recursive read on specific dirs meant to be shared via virtiofs.
-# Pass a colon-separated list via VIRTIOFS_SHARES, e.g.:
+# Grant libvirt-qemu/virtiofsd read access ONLY on explicitly listed share
+# dirs — never the whole home directory. Pass a colon-separated list via
+# VIRTIOFS_SHARES, e.g.:
 #   VIRTIOFS_SHARES="$HOME/infosec:$HOME/projects" ./cockpit-install.sh
 if [ -n "${VIRTIOFS_SHARES:-}" ]; then
     IFS=':' read -ra _shares <<<"$VIRTIOFS_SHARES"
@@ -57,6 +50,10 @@ if [ -n "${VIRTIOFS_SHARES:-}" ]; then
             sudo setfacl -R -m u:libvirt-qemu:rx "$_s"
         fi
     done
+else
+    echo "NOTE: no VIRTIOFS_SHARES set — libvirt-qemu has no access to your home."
+    echo "      To share dirs via virtiofs, re-run with:"
+    echo "        VIRTIOFS_SHARES=\"\$HOME/dir1:\$HOME/dir2\" $0"
 fi
 
 if command -v ufw >/dev/null 2>&1; then
@@ -64,5 +61,5 @@ if command -v ufw >/dev/null 2>&1; then
 fi
 
 echo "Cockpit installed. Log out/in so group changes (libvirt, kvm) take effect for $TARGET_USER."
-echo "virtiofs: libvirt-qemu has rx on $TARGET_HOME (shares under it will be readable from guests)."
+echo "virtiofs: libvirt-qemu has rx only on dirs listed in VIRTIOFS_SHARES."
 echo "Open: https://$(hostname -I | awk '{print $1}'):9090"

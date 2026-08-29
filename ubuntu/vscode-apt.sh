@@ -7,8 +7,11 @@ set -e
 sudo apt update
 sudo apt install -y wget gpg apt-transport-https jq
 
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc \
-  | sudo gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
+MS_KEY=$(mktemp)
+trap 'rm -f "$MS_KEY"' EXIT
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc > "$MS_KEY"
+echo "2fa9c05d591a1582a9aba276272478c262e95ad00acf60eaee1644d93941e3c6  $MS_KEY" | sha256sum -c - >/dev/null
+sudo gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg "$MS_KEY"
 
 sudo tee /etc/apt/sources.list.d/vscode.sources >/dev/null <<'SOURCES'
 Types: deb

@@ -40,3 +40,22 @@ next landscape-client upgrade — re-run the script after upgrades.
 
 Offline boxes (gamma-tech, media, gamma-metrc-backup): run it on disk via
 `pct mount` / guest agent at next boot, or from the running system.
+
+## Licensing (seat exhaustion and the free-Pro cap)
+
+A standalone account licenses by seat. A computer accepted while the legacy
+pool is full (or before Pro was attached) lands UNLICENSED: no Shutdown/Reboot
+buttons, OS reads "---". Fix per host WITHOUT re-registering — attach Pro, drop
+the pro-info data-watcher persist, restart the client (see
+`landscape-license-roll.sh`, run as root on the client). The unlicensed message
+set deliberately includes `ubuntu-pro-info`; the server's
+`update_pro_licensing` handler re-classifies on the next send.
+
+The free-personal Pro tier covers unlimited VMs, but Landscape hardcodes
+`MAX_FREE_PRO_INSTANCES = 5` (site-packages
+`canonical/landscape/model/main/licensing_strategies.py`), so a 6th accept
+fails in the portal. Cap is 100 now — re-run `bump-free-pro-instances.sh`
+after any `landscape-server-quickstart` upgrade (the package rewrites the
+module). The server code also lives at `/opt/canonical/landscape/...` — the
+live copy is the venv site-packages one; edit the venv file, not the
+/opt/canonical clone.

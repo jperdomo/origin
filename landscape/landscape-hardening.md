@@ -38,8 +38,15 @@ bash /opt/data/scripts/landscape-client-harden.sh
 Note: the delay patch sits in the installed package and is overwritten on the
 next landscape-client upgrade — re-run the script after upgrades.
 
-Offline boxes (gamma-tech, media, gamma-metrc-backup): run it on disk via
+Offline boxes (gamma-tech, media): run it on disk via
 `pct mount` / guest agent at next boot, or from the running system.
+gamma-metrc-backup (401) is on the nested PVE on um560 (192.168.122.81) —
+harden via `qm guest exec 401 -- bash -c '...'` as root through the jump
+chain um560 → 192.168.122.81.
+
+All fleet clients are now hardened and verified (2026-09-14): gamma-build,
+gamma-metrc, cache, the Landscape server itself, zima, home-assistant,
+um560, gamma-metrc-backup live; gamma-tech + media on disk at next boot.
 
 ## Licensing (seat exhaustion and the free-Pro cap)
 
